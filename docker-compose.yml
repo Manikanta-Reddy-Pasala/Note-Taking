@@ -1,0 +1,7 @@
+services:
+  folia:
+    build: .
+    image: folia:local
+    ports:
+      - "8080:80"
+    restart: unless-stopped
