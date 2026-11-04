@@ -599,6 +599,8 @@
         <small>Leaves of a notebook</small>
       </div>
     </div>
+    <button class="today-btn" id="btnOpen" type="button">Open folder</button>
+    <input id="folderInput" type="file" accept=".md,text/markdown" webkitdirectory directory multiple hidden>
     <button class="today-btn" id="btnToday" type="button" title="Open today and carry unfinished tasks forward">
       Open today
       <kbd>N</kbd>
@@ -617,10 +619,9 @@
     <nav class="tree" id="tree" aria-label="Vault"></nav>
     <div class="side-foot">
       <div>
-        <div id="footMeta">Local vault</div>
+        <div id="footMeta">No folder open</div>
         <div class="hint">Swipe a task right for tomorrow. Drag the page edge to turn.</div>
       </div>
-      <button class="icon-btn" id="btnReset" type="button" aria-label="Restore the demo" title="Restore the demo">↺</button>
     </div>
   </aside>
 
@@ -708,87 +709,259 @@ function noteLabel(note) {
   });
 }
 
-function seed() {
-  const sun = addDays(todayISO(), -2);
-  const mon = addDays(todayISO(), -1);
-  const tue = todayISO();
-  const wed = addDays(tue, 1);
-  const ids = {
-    daily: "f-daily", personal: "f-personal", health: "f-health", home: "f-home",
-    work: "f-work", launch: "f-launch", clients: "f-clients", acme: "f-acme",
-    q4: "f-q4", north: "f-north", projects: "f-projects", garden: "f-garden",
-    shop: "f-shop"
-  };
-  const folders = [
-    { id: ids.daily, name: "Daily", parentId: null },
-    { id: ids.personal, name: "Personal", parentId: null },
-    { id: ids.health, name: "Health", parentId: ids.personal },
-    { id: ids.home, name: "Home", parentId: ids.personal },
-    { id: ids.work, name: "Work", parentId: null },
-    { id: ids.launch, name: "Launch", parentId: ids.work },
-    { id: ids.clients, name: "Clients", parentId: ids.work },
-    { id: ids.acme, name: "Acme", parentId: ids.clients },
-    { id: ids.q4, name: "Q4 review", parentId: ids.acme },
-    { id: ids.north, name: "Northwind", parentId: ids.clients },
-    { id: ids.projects, name: "Projects", parentId: null },
-    { id: ids.garden, name: "Garden", parentId: ids.projects },
-    { id: ids.shop, name: "Workshop", parentId: ids.projects }
-  ];
-  const notes = [
-    { id: "n-sun", folderId: ids.daily, type: "daily", date: sun, title: formatHuman(sun),
-      body: `# ${formatHuman(sun)}\n\n## Today\n- [x] Morning pages\n- [x] Market run\n- [ ] Sketch the winter beds\n` },
-    { id: "n-mon", folderId: ids.daily, type: "daily", date: mon, title: formatHuman(mon),
-      body: `# ${formatHuman(mon)}\n\n## Today\n- [x] Pay electricity\n- [ ] Call the nursery\n\nLeft the beds and the Q4 outline for [[${formatHuman(tue)}]].\n` },
-    { id: "n-today", folderId: ids.daily, type: "daily", date: tue, title: formatHuman(tue),
-      body: `# ${formatHuman(tue)}\n\nThe launch still depends on [[Positioning]]. The beds are written up in [[Winter beds]].\n\n## Today\n- [ ] Sketch the winter beds\n- [ ] Review Q4 outline\n- [ ] Read the positioning note\n\n## Tomorrow\n- [ ] Book dentist follow-up\n- [ ] Water the figs\n` },
-    { id: "n-pos", folderId: ids.launch, type: "note", title: "Positioning",
-      body: `A quiet notebook that carries unfinished work onto the next leaf.\n\nThe promise is smaller than a second brain. You write, you link, and what you did not finish is waiting in tomorrow.\n\nSee [[Launch checklist]] before recording the walkthrough.\n` },
-    { id: "n-chk", folderId: ids.launch, type: "note", title: "Launch checklist",
-      body: `## Site\n- [x] Hero copy\n- [ ] Pricing table\n- [ ] Favicon\n\n## Outbound\n- [ ] Note to early readers\n\nVoice lives in [[Positioning]].\n` },
-    { id: "n-acme", folderId: ids.acme, type: "note", title: "Kickoff notes",
-      body: `Scope is the Q4 operating review. Agenda is in [[Review agenda]].\n\n- [ ] Confirm attendees\n- [ ] Pull last quarter's board\n` },
-    { id: "n-q4", folderId: ids.q4, type: "note", title: "Review agenda",
-      body: `1. Revenue vs plan\n2. Open risks\n3. Hiring freeze exceptions\n\n- [ ] Send pre-read Friday\n\nFrom [[Kickoff notes]].\n` },
-    { id: "n-beds", folderId: ids.garden, type: "note", title: "Winter beds",
-      body: `Olive, fig, and the north wall herbs.\n\n- [ ] Prune the olive\n- [ ] Order soil\n  - [ ] Two bags of compost\n  - [ ] One bag of grit\n` }
-  ];
-  const tasks = [
-    t("t1", ids.daily, "Morning pages", true, "done", null, "n-sun", sun),
-    t("t2", ids.daily, "Market run", true, "done", null, "n-sun", sun),
-    t("t3", ids.daily, "Sketch the winter beds", false, "todo", null, "n-sun", sun),
-    t("t4", ids.daily, "Pay electricity", true, "done", null, "n-mon", mon),
-    t("t8", ids.daily, "Call the nursery", false, "todo", null, "n-mon", mon),
-    t("t24", ids.daily, "Sketch the winter beds", false, "todo", null, "n-today", tue),
-    t("t25", ids.daily, "Review Q4 outline", false, "todo", null, "n-today", tue),
-    t("t26", ids.daily, "Read the positioning note", false, "todo", null, "n-today", tue),
-    t("t5", ids.daily, "Book dentist follow-up", false, "todo", null, "n-today", tue, wed),
-    t("t7", ids.daily, "Water the figs", false, "todo", null, "n-today", tue, wed),
-    t("t9", ids.launch, "Ship landing page", false, "doing"),
-    t("t10", ids.launch, "Hero copy", true, "done", "t9"),
-    t("t11", ids.launch, "Pricing table", false, "todo", "t9"),
-    t("t12", ids.launch, "Write changelog", false, "todo"),
-    t("t13", ids.launch, "Record demo", false, "todo"),
-    t("t14", ids.launch, "Fix nav overlap", true, "done"),
-    t("t15", ids.q4, "Confirm attendees", false, "todo"),
-    t("t16", ids.q4, "Pull last quarter's board", false, "doing"),
-    t("t17", ids.q4, "Send pre-read Friday", false, "todo"),
-    t("t18", ids.garden, "Prune the olive", false, "todo"),
-    t("t19", ids.garden, "Order soil", false, "doing"),
-    t("t20", ids.garden, "Two bags of compost", false, "todo", "t19"),
-    t("t21", ids.garden, "One bag of grit", false, "todo", "t19"),
-    t("t22", ids.health, "Book dentist follow-up", false, "todo"),
-    t("t23", ids.home, "Replace kitchen bulb", true, "done")
-  ];
+function emptyVault() {
   return {
-    folders, notes, tasks,
-    selectedFolderId: ids.daily,
-    selectedNoteId: "n-today",
-    view: "notes",
-    collapsed: { "f-personal": true, "f-projects": true, "f-clients": true, "f-acme": true },
-    query: "",
-    peekOpen: false
+    folders: [], notes: [], tasks: [],
+    selectedFolderId: null, selectedNoteId: null,
+    view: "notes", collapsed: {}, query: "", peekOpen: false,
+    folderName: ""
   };
 }
+const fileHandles = new Map();
+const dirHandles = new Map();
+const written = new Map();
+let rootHandle = null;
+
+function headingOrName(body, base) {
+  const heading = String(body || "").match(/^#\s+(.+)$/m);
+  return heading ? heading[1].trim() : base;
+}
+function tasksFromNote(note) {
+  const stack = [];
+  return parseChecks(note.body).map(check => {
+    const depth = check.depth || 0;
+    while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
+    const parent = stack[stack.length - 1];
+    const task = t(
+      uid(), note.folderId, check.title.trim(), check.done,
+      check.done ? "done" : "todo", parent ? parent.id : null, note.id, note.date
+    );
+    task.line = check.line;
+    stack.push({ depth, id: task.id });
+    return task;
+  });
+}
+function noteFromFile(folderId, name, body) {
+  const base = name.replace(/\.md$/i, "");
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(base) ? base : null;
+  return {
+    id: uid(), folderId, type: date ? "daily" : "note", date,
+    title: date ? formatHuman(date) : headingOrName(body, base),
+    body, fileName: name
+  };
+}
+function pruneEmpty(folders, notes) {
+  const keep = new Set();
+  notes.forEach(note => {
+    let id = note.folderId;
+    const guard = new Set();
+    while (id && !guard.has(id)) {
+      guard.add(id);
+      keep.add(id);
+      const folder = folders.find(item => item.id === id);
+      id = folder ? folder.parentId : null;
+    }
+  });
+  return folders.filter(folder => keep.has(folder.id));
+}
+function focusDaily(folders, notes) {
+  const ranked = folders.map(folder => ({
+    folder,
+    count: notes.filter(note => note.folderId === folder.id && note.date).length
+  })).sort((a, b) => b.count - a.count);
+  const folder = (ranked[0] && ranked[0].count ? ranked[0].folder : folders[0]) || null;
+  const collapsed = {};
+  folders.forEach(item => { collapsed[item.id] = true; });
+  if (!folder) return { selectedFolderId: null, selectedNoteId: null, collapsed };
+  let id = folder.id;
+  const guard = new Set();
+  while (id && !guard.has(id)) {
+    guard.add(id);
+    collapsed[id] = false;
+    const current = folders.find(item => item.id === id);
+    id = current ? current.parentId : null;
+  }
+  const inFolder = notes.filter(note => note.folderId === folder.id);
+  const today = inFolder.find(note => note.date === todayISO());
+  const latest = inFolder.filter(note => note.date).sort((a, b) => a.date.localeCompare(b.date)).pop();
+  const chosen = today || latest || inFolder[inFolder.length - 1] || null;
+  return { selectedFolderId: folder.id, selectedNoteId: chosen ? chosen.id : null, collapsed };
+}
+function adoptVault(name, folders, notes) {
+  folders = pruneEmpty(folders, notes);
+  const tasks = notes.flatMap(tasksFromNote);
+  const focus = focusDaily(folders, notes);
+  const next = emptyVault();
+  next.folderName = name || "";
+  next.folders = folders;
+  next.notes = notes;
+  next.tasks = tasks;
+  next.selectedFolderId = focus.selectedFolderId;
+  next.selectedNoteId = focus.selectedNoteId;
+  next.collapsed = focus.collapsed;
+  next.query = state && state.query || "";
+  next.view = "notes";
+  state = next;
+  notes.forEach(note => written.set(note.id, note.body));
+}
+function buildFromList(entries) {
+  fileHandles.clear();
+  dirHandles.clear();
+  written.clear();
+  rootHandle = null;
+  const folders = [];
+  const notes = [];
+  const folderIds = new Map();
+  entries.forEach(entry => {
+    const parts = String(entry.path || "").split("/").filter(Boolean);
+    const file = parts.pop();
+    if (!file || !/\.md$/i.test(file)) return;
+    let parent = null;
+    let key = "";
+    parts.forEach(part => {
+      key = key ? `${key}/${part}` : part;
+      if (!folderIds.has(key)) {
+        const id = uid();
+        folderIds.set(key, id);
+        folders.push({ id, name: part, parentId: parent });
+      }
+      parent = folderIds.get(key);
+    });
+    const note = noteFromFile(parent, file, entry.body || "");
+    notes.push(note);
+    if (entry.handle) fileHandles.set(note.id, entry.handle);
+  });
+  adoptVault(entries.name || "", folders, notes);
+}
+const writeChain = new Map();
+async function persistNote(note) {
+  const handle = fileHandles.get(note.id);
+  if (!handle) return;
+  const body = note.body;
+  if (written.get(note.id) === body) return;
+  written.set(note.id, body);
+  try {
+    const writable = await handle.createWritable();
+    await writable.write(body);
+    await writable.close();
+  } catch (err) {
+    written.delete(note.id);
+    toast("Could not save the file");
+    return;
+  }
+  if (note.body !== body) {
+    written.delete(note.id);
+    await persistNote(note);
+  }
+}
+function writeNote(note) {
+  if (!note || !fileHandles.get(note.id)) return;
+  const run = (writeChain.get(note.id) || Promise.resolve()).then(() => persistNote(note));
+  writeChain.set(note.id, run.catch(() => {}));
+}
+async function walkDir(dir, parentId, folders, notes) {
+  for await (const [name, handle] of dir.entries()) {
+    if (name.startsWith(".")) continue;
+    if (handle.kind === "directory") {
+      const id = uid();
+      folders.push({ id, name, parentId });
+      dirHandles.set(id, handle);
+      await walkDir(handle, id, folders, notes);
+    } else if (handle.kind === "file" && /\.md$/i.test(name)) {
+      const body = await (await handle.getFile()).text();
+      const note = noteFromFile(parentId, name, body);
+      notes.push(note);
+      fileHandles.set(note.id, handle);
+    }
+  }
+}
+async function openRoot(handle) {
+  fileHandles.clear();
+  dirHandles.clear();
+  written.clear();
+  rootHandle = handle;
+  const folders = [];
+  const notes = [];
+  const rootId = uid();
+  folders.push({ id: rootId, name: handle.name, parentId: null });
+  dirHandles.set(rootId, handle);
+  await walkDir(handle, rootId, folders, notes);
+  adoptVault(handle.name, folders, notes);
+  rememberHandle(handle);
+  editingNote = false;
+  lastRenderedNote = null;
+  render();
+  toast(notes.length ? `Opened ${notes.length} notes` : "That folder has no markdown files");
+}
+function dirDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open("folia-folder", 1);
+    req.onupgradeneeded = () => req.result.createObjectStore("handles");
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function rememberHandle(handle) {
+  try {
+    const db = await dirDb();
+    const tx = db.transaction("handles", "readwrite");
+    tx.objectStore("handles").put(handle, "root");
+  } catch (err) { /* the folder can still be opened again */ }
+}
+async function storedHandle() {
+  try {
+    const db = await dirDb();
+    return await new Promise(resolve => {
+      const tx = db.transaction("handles", "readonly");
+      const req = tx.objectStore("handles").get("root");
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch (err) {
+    return null;
+  }
+}
+async function openFolder() {
+  if (!window.showDirectoryPicker) {
+    $("folderInput").click();
+    return;
+  }
+  try {
+    const saved = await storedHandle();
+    if (saved) {
+      const perm = await saved.requestPermission({ mode: "readwrite" });
+      if (perm === "granted") {
+        await openRoot(saved);
+        return;
+      }
+    }
+    const picked = await showDirectoryPicker({ mode: "readwrite", id: "folia-notes" });
+    await openRoot(picked);
+  } catch (err) {
+    if (err && err.name === "AbortError") return;
+    toast("Could not open that folder");
+  }
+}
+async function readDroppedFiles(fileList) {
+  const entries = [];
+  for (const item of fileList) {
+    const path = item.webkitRelativePath || item.name;
+    const base = path.split("/").pop();
+    if (!base || base.startsWith(".") || !/\.md$/i.test(base) || path.split("/").some(part => part.startsWith("."))) continue;
+    entries.push({ path, body: await item.text() });
+  }
+  const top = (fileList[0] && fileList[0].webkitRelativePath || "").split("/")[0];
+  entries.name = top;
+  buildFromList(entries);
+  editingNote = false;
+  lastRenderedNote = null;
+  render();
+  toast(entries.length ? `Opened ${entries.length} notes. This browser will not save edits back to the files.` : "That folder has no markdown files");
+}
+function seed() {
+  return emptyVault();
+}
+
 
 function t(id, folderId, title, done, status, parentId, dailyNoteId, dailyDate, scheduledFor) {
   return {
@@ -812,13 +985,9 @@ function normalize(s) {
   return s;
 }
 function load() {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) return normalize(JSON.parse(raw));
-  } catch (err) { /* fresh vault */ }
-  return seed();
+  return emptyVault();
 }
-function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+function save() { /* notes live in the opened folder */ }
 
 let state = load();
 let modalMode = null;
@@ -843,11 +1012,12 @@ function flushEditor() {
   const body = $("noteBody");
   const id = (title && title.dataset.forNote) || (body && body.dataset.forNote);
   const note = id ? state.notes.find(item => item.id === id) : null;
-  if (!note) return;
-  if (title && title.dataset.forNote === note.id) {
+  if (!note) return null;
+  if (title && title.dataset.forNote === note.id && !fileHandles.has(note.id)) {
     note.title = title.value.replace(/\n/g, " ").trim() || note.title;
   }
   if (body && body.dataset.forNote === note.id) note.body = body.value;
+  return note;
 }
 function syncEditor(note) {
   if (!note) return;
@@ -1063,8 +1233,11 @@ function renderMain() {
     tab.setAttribute("aria-selected", on ? "true" : "false");
   });
   if (!folder) {
-    $("crumb").textContent = "Choose a folder";
-    $("book").innerHTML = `<article class="sheet"><div class="sheet-inner"><div class="empty">Choose a folder in the vault.</div></div></article>`;
+    $("crumb").textContent = state.folderName || "No folder open";
+    $("book").innerHTML = `<article class="sheet"><div class="sheet-inner"><div class="empty">
+      <p>Open a folder of markdown files. Dated notes such as 2024-06-12.md stay in their own folder.</p>
+      <button class="today-btn" type="button" data-open-folder>Open folder</button>
+    </div></div></article>`;
     document.title = "Folia";
     return;
   }
@@ -1272,9 +1445,12 @@ function render() {
   const today = todayISO();
   const open = state.tasks.filter(task => !task.done && !task.parentId && !(task.scheduledFor && task.scheduledFor > today)).length;
   const later = tomorrowTasks().length;
-  $("footMeta").textContent = `${open} open, ${later} ${peekLabel().toLowerCase()}`;
+  $("footMeta").textContent = state.folderName
+    ? `${state.folderName} · ${open} open, ${later} ${peekLabel().toLowerCase()}`
+    : "No folder open";
   save();
   suppressFocusSave = false;
+  state.notes.forEach(note => writeNote(note));
 }
 
 function openNote(id) {
@@ -1293,32 +1469,62 @@ function createLinked(title) {
   if (!name) return;
   const existing = findNote(name);
   if (existing) { openNote(existing.id); return; }
+  const folder = folderById(state.selectedFolderId) || ensureDaily();
+  if (!folder) {
+    toast("Open a folder first");
+    return;
+  }
   const id = uid();
-  state.notes.unshift({
-    id, folderId: state.selectedFolderId || ensureDaily().id,
-    type: "note", title: name, body: "", date: null
-  });
+  const note = {
+    id, folderId: folder.id, type: "note", title: name, body: "", date: null,
+    fileName: `${name.replace(/[\\/]/g, "-")}.md`
+  };
+  state.notes.unshift(note);
   editingNote = true;
   openNote(id);
   editingNote = true;
   render();
+  attachNewFile(note);
   $("noteTitle")?.focus();
   $("noteTitle")?.select();
 }
+async function attachNewFile(note) {
+  const dir = dirHandles.get(note.folderId);
+  if (!dir || !note) return;
+  const name = note.fileName || (note.date ? `${note.date}.md` : `${(note.title || "Untitled").replace(/[\\/]/g, "-")}.md`);
+  note.fileName = name;
+  try {
+    const handle = await dir.getFileHandle(name, { create: true });
+    fileHandles.set(note.id, handle);
+    written.delete(note.id);
+    await writeNote(note);
+  } catch (err) {
+    toast("Could not create the file");
+  }
+}
 function addNote() {
   if (!folderById(state.selectedFolderId)) {
-    toast("Choose a folder first");
+    toast("Open a folder first");
     return;
   }
   const id = uid();
+  let fileName = "Untitled.md";
+  let n = 2;
+  while (state.notes.some(note => note.folderId === state.selectedFolderId && note.fileName === fileName)) {
+    fileName = `Untitled ${n}.md`;
+    n += 1;
+  }
   state.collapsed[state.selectedFolderId] = false;
-  state.notes.unshift({
-    id, folderId: state.selectedFolderId, type: "note", title: "Untitled", body: "", date: null
-  });
+  const note = {
+    id, folderId: state.selectedFolderId, type: "note", title: fileName.replace(/\.md$/i, ""),
+    body: "", date: null, fileName
+  };
+  state.notes.unshift(note);
   state.selectedNoteId = id;
   state.view = "notes";
   editingNote = true;
   render();
+  attachNewFile(note);
   const title = $("noteTitle");
   if (title) { title.focus(); title.select(); }
 }
@@ -1327,17 +1533,34 @@ function removeNote(id) {
   if (index < 0) return;
   const note = state.notes[index];
   const tasks = state.tasks.filter(task => task.dailyNoteId === id);
-  state.notes.splice(index, 1);
-  state.tasks = state.tasks.filter(task => task.dailyNoteId !== id);
-  if (state.selectedNoteId === id) state.selectedNoteId = null;
-  render();
-  toast("Deleted the note", () => {
-    state.notes.splice(Math.min(index, state.notes.length), 0, note);
-    state.tasks.push(...tasks);
-    state.selectedNoteId = id;
-    state.view = "notes";
+  const handle = fileHandles.get(id);
+  const drop = () => {
+    fileHandles.delete(id);
+    state.notes.splice(index, 1);
+    state.tasks = state.tasks.filter(task => task.dailyNoteId !== id);
+    if (state.selectedNoteId === id) state.selectedNoteId = null;
     render();
-  });
+    toast("Deleted the note", async () => {
+      const dir = dirHandles.get(note.folderId);
+      if (dir && note.fileName) {
+        try {
+          const created = await dir.getFileHandle(note.fileName, { create: true });
+          fileHandles.set(note.id, created);
+          written.delete(note.id);
+          await persistNote(note);
+        } catch (err) {
+          toast("Could not restore the file");
+        }
+      }
+      state.notes.splice(Math.min(index, state.notes.length), 0, note);
+      state.tasks.push(...tasks);
+      state.selectedNoteId = id;
+      state.view = "notes";
+      render();
+    });
+  };
+  if (!handle) { drop(); return; }
+  handle.remove().then(drop).catch(() => toast("Could not delete the file"));
 }
 function taskFamily(id) {
   return [id, ...state.tasks.filter(item => item.parentId === id).flatMap(item => taskFamily(item.id))];
@@ -1353,10 +1576,13 @@ function removeTask(id) {
   let previousBody = null;
   if (note) {
     previousBody = note.body;
-    note.body = note.body.split("\n").filter(line => {
-      const match = line.match(/^\s*- \[[ xX]\]\s?(.*)$/);
-      return !(match && match[1] === task.title);
-    }).join("\n");
+    const lines = note.body.split("\n");
+    const parentLine = findCheckIndex(lines, task.title, task.line);
+    if (parentLine >= 0) {
+      const end = blockEnd(lines, parentLine);
+      lines.splice(parentLine, end - parentLine);
+      note.body = lines.join("\n").replace(/\n{3,}/g, "\n\n");
+    }
     syncEditor(note);
   }
   render();
@@ -1382,7 +1608,7 @@ function parseChecks(body) {
   return body.split("\n").flatMap((line, i) => {
     const match = line.match(/^(\s*)- \[([ xX])\]\s?(.*)$/);
     if (!match || !match[3].trim()) return [];
-    return [{ line: i, done: match[2] !== " ", title: match[3], indent: match[1], depth: match[1].replace(/\t/g, "  ").length }];
+    return [{ line: i, done: match[2] !== " ", title: match[3], indent: match[1], depth: Math.floor(match[1].replace(/\t/g, "  ").length / 2) }];
   });
 }
 function checkLine(indent, title, done) {
@@ -1399,30 +1625,100 @@ function lineIndent(note, title) {
 function insertChecks(note, rows) {
   if (!rows.length) return;
   const lines = note.body.split("\n");
-  let at = lines.findIndex(line => /^##\s+today\b/i.test(line.trim()));
-  if (at < 0) { lines.unshift("## Today"); at = 0; }
+  let at = lines.findIndex(line => /^##\s+(today|todo)\b/i.test(line.trim()));
+  if (at < 0) {
+    lines.unshift("## todo");
+    at = 0;
+  }
   lines.splice(at + 1, 0, ...rows);
   note.body = lines.join("\n");
 }
-function placeCheck(note, title, iso, done) {
-  let indent = "";
-  const lines = note.body.split("\n").filter(line => {
-    const match = line.match(/^(\s*)- \[[ xX]\]\s?(.*)$/);
-    if (match && match[2] === title) {
-      if (!indent) indent = match[1];
-      return false;
+function relinkNoteTasks(note) {
+  const stack = [];
+  const used = new Set();
+  parseChecks(note.body).forEach(check => {
+    const depth = check.depth || 0;
+    while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
+    const parent = stack[stack.length - 1];
+    let task = state.tasks.find(item => item.dailyNoteId === note.id && !used.has(item.id) && item.title.trim() === check.title.trim());
+    if (!task) {
+      task = t(uid(), note.folderId, check.title.trim(), check.done, check.done ? "done" : "todo", parent ? parent.id : null, note.id, note.date);
+      state.tasks.push(task);
+    } else {
+      task.parentId = parent ? parent.id : null;
+      task.done = check.done;
+      task.status = check.done ? "done" : "todo";
     }
-    return true;
+    used.add(task.id);
+    task.line = check.line;
+    stack.push({ depth, id: task.id });
   });
-  const header = note.date && iso && iso > note.date ? "## Tomorrow" : "## Today";
-  let at = lines.findIndex(line => line.trim().toLowerCase() === header.toLowerCase());
+}
+function checkboxAt(line) {
+  const match = String(line || "").match(/^(\s*)- \[([ xX])\]\s?(.*)$/);
+  if (!match || !match[3].trim()) return null;
+  return {
+    indent: match[1], mark: match[2], title: match[3].trim(),
+    depth: Math.floor(match[1].replace(/\t/g, "  ").length / 2)
+  };
+}
+function findCheckIndex(lines, title, line) {
+  const name = String(title || "").trim();
+  if (Number.isInteger(line)) {
+    const item = checkboxAt(lines[line]);
+    if (item && item.title === name) return line;
+  }
+  return lines.findIndex(entry => {
+    const item = checkboxAt(entry);
+    return item && item.title === name;
+  });
+}
+function blockEnd(lines, index) {
+  const head = checkboxAt(lines[index]);
+  if (!head) return index + 1;
+  let end = index + 1;
+  while (end < lines.length) {
+    if (/^#{1,6}\s/.test(lines[end])) break;
+    const item = checkboxAt(lines[end]);
+    if (item && item.depth <= head.depth) break;
+    end += 1;
+  }
+  return end;
+}
+function markOpenCheck(note, title, line) {
+  const lines = note.body.split("\n");
+  const index = findCheckIndex(lines, title, line);
+  const item = index >= 0 ? checkboxAt(lines[index]) : null;
+  if (!item || item.mark !== " ") return false;
+  lines[index] = checkLine(item.indent, item.title, true);
+  note.body = lines.join("\n");
+  return true;
+}
+function placeCheck(note, title, iso, done, line) {
+  const lines = note.body.split("\n");
+  const index = findCheckIndex(lines, title, line);
+  let block = [];
+  if (index >= 0) {
+    const end = blockEnd(lines, index);
+    block = lines.splice(index, end - index);
+    const head = checkboxAt(block[0]);
+    block[0] = checkLine(head.indent, head.title, done);
+  } else {
+    block = [checkLine("", title, done)];
+  }
+  const wantTomorrow = note.date && iso && iso > note.date;
+  const header = wantTomorrow
+    ? "## Tomorrow"
+    : (lines.some(entry => /^##\s+todo\b/i.test(entry.trim())) ? "## todo" : "## Today");
+  let at = lines.findIndex(entry => entry.trim().toLowerCase() === header.toLowerCase());
   if (at < 0) {
     if (lines.length && lines[lines.length - 1].trim() !== "") lines.push("");
     lines.push(header);
     at = lines.length - 1;
   }
-  lines.splice(at + 1, 0, checkLine(indent, title, done));
+  lines.splice(at + 1, 0, ...block);
   note.body = lines.join("\n").replace(/\n{3,}/g, "\n\n");
+  relinkNoteTasks(note);
   syncEditor(note);
 }
 function scheduleTask(task, iso) {
@@ -1432,7 +1728,7 @@ function scheduleTask(task, iso) {
     task.status = "todo";
   }
   const note = task.dailyNoteId ? state.notes.find(n => n.id === task.dailyNoteId) : null;
-  if (note) placeCheck(note, task.title, iso, !iso && task.done);
+  if (note) placeCheck(note, task.title, iso, !iso && task.done, task.line);
   render();
   toast(iso ? `Set for ${formatHuman(iso)}` : "Brought back to today");
 }
@@ -1442,13 +1738,14 @@ function toggleDone(task, done, announce) {
   const note = task.dailyNoteId ? state.notes.find(n => n.id === task.dailyNoteId) : null;
   if (note) {
     const lines = note.body.split("\n");
-    const index = lines.findIndex(line => {
-      const match = line.match(/^\s*- \[[ xX]\]\s?(.*)$/);
-      return match && match[1] === task.title;
-    });
-    if (index >= 0) lines[index] = lines[index].replace(/- \[[ xX]\]/, done ? "- [x]" : "- [ ]");
-    note.body = lines.join("\n");
-    syncEditor(note);
+    const index = findCheckIndex(lines, task.title, task.line);
+    if (index >= 0) {
+      const item = checkboxAt(lines[index]);
+      lines[index] = checkLine(item.indent, item.title, done);
+      note.body = lines.join("\n");
+      relinkNoteTasks(note);
+      syncEditor(note);
+    }
   }
   render();
   if (announce) toast(done ? "Marked done" : "Reopened");
@@ -1502,23 +1799,37 @@ function showTask(task) {
 }
 
 function ensureDaily() {
-  let daily = state.folders.find(f => f.name === "Daily" && !f.parentId);
-  if (!daily) {
-    daily = { id: uid(), name: "Daily", parentId: null };
-    state.folders.unshift(daily);
-  }
-  return daily;
+  const named = state.folders
+    .filter(folder => /daily/i.test(folder.name))
+    .map(folder => ({
+      folder,
+      count: state.notes.filter(note => note.folderId === folder.id && note.date).length
+    }))
+    .sort((a, b) => b.count - a.count);
+  if (named[0]) return named[0].folder;
+  const ranked = state.folders.map(folder => ({
+    folder,
+    count: state.notes.filter(note => note.folderId === folder.id && note.date).length
+  })).sort((a, b) => b.count - a.count);
+  if (ranked[0] && ranked[0].count) return ranked[0].folder;
+  return state.folders.find(folder => !folder.parentId) || null;
 }
 function addForDate(title, date) {
   const ownerDate = addDays(date, -1);
   const daily = ensureDaily();
   let owner = state.notes.find(n => n.type === "daily" && n.date === ownerDate);
+  if (!daily) {
+    toast("Open a folder first");
+    return;
+  }
   if (!owner && ownerDate === todayISO()) {
     owner = {
       id: uid(), folderId: daily.id, type: "daily", date: ownerDate,
-      title: formatHuman(ownerDate), body: "## Today\n\n## Tomorrow\n"
+      title: formatHuman(ownerDate), body: "## todo\n\n## Tomorrow\n",
+      fileName: `${ownerDate}.md`
     };
     state.notes.push(owner);
+    attachNewFile(owner);
   }
   const task = {
     id: uid(),
@@ -1540,20 +1851,29 @@ function rollover() {
   flushEditor();
   const date = todayISO();
   const daily = ensureDaily();
+  if (!daily) {
+    toast("Open a folder first");
+    return;
+  }
   let note = state.notes.find(n => n.type === "daily" && n.date === date);
   const previous = state.notes
     .filter(n => n.type === "daily" && n.date && n.date < date)
-    .sort((a, b) => b.date.localeCompare(a.date));
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 1);
   const openTasks = [];
   const closeOnly = [];
   const seen = new Set();
-  const consider = (title, fromId, fromDate, scheduledFor, indent, parentId) => {
+  const consider = (title, fromId, fromDate, scheduledFor, indent, parentId, line) => {
     const name = String(title || "").trim();
     if (!name) return;
     if (scheduledFor && scheduledFor > date) return;
-    const item = { title: name, fromId, fromDate, indent: indent || "", parentId: parentId || null };
-    if (seen.has(name)) { closeOnly.push(item); return; }
-    seen.add(name);
+    const item = { title: name, fromId, fromDate, indent: indent || "", parentId: parentId || null, line: line == null ? null : line };
+    if (seen.has(fromId)) {
+      const existing = openTasks.find(entry => entry.fromId === fromId);
+      if (existing && existing.line == null && line != null) existing.line = line;
+      return;
+    }
+    seen.add(fromId);
     openTasks.push(item);
   };
   previous.forEach(prev => {
@@ -1561,13 +1881,16 @@ function rollover() {
     state.tasks.filter(task => task.dailyNoteId === prev.id && !task.done).forEach(task => {
       consider(task.title, task.id, prev.date, task.scheduledFor, lineIndent(prev, task.title), task.parentId);
     });
+    const claimed = new Set();
     parseChecks(prev.body).forEach(check => {
       if (check.done) return;
-      const linked = state.tasks.find(task => task.dailyNoteId === prev.id && task.title === check.title);
+      const linked = state.tasks.find(task => task.dailyNoteId === prev.id && task.line === check.line && !claimed.has(task.id))
+        || state.tasks.find(task => task.dailyNoteId === prev.id && !claimed.has(task.id) && task.title.trim() === check.title.trim());
+      if (linked) claimed.add(linked.id);
       const scheduled = linked
         ? linked.scheduledFor
         : (sectionOf(lines, check.line) === "tomorrow" ? addDays(prev.date, 1) : null);
-      consider(check.title, linked ? linked.id : `${prev.id}:${check.line}`, prev.date, scheduled, check.indent, linked && linked.parentId);
+      consider(check.title, linked ? linked.id : `${prev.id}:${check.line}`, prev.date, scheduled, check.indent, linked && linked.parentId, check.line);
     });
   });
   state.tasks.filter(task => !task.done && !task.parentId && !task.dailyNoteId && task.scheduledFor === date).forEach(task => {
@@ -1577,14 +1900,13 @@ function rollover() {
   const copying = openTasks.filter(item => item.fromDate);
   const created = !note;
   if (!note) {
-    const lines = ["## Today", ...copying.map(item => checkLine(item.indent, item.title, false))];
-    if (!copying.length && !openTasks.some(item => !item.fromDate)) lines.push("- [ ] ");
-    lines.push("", "## Tomorrow");
+    const lines = ["## todo", ...copying.map(item => checkLine(item.indent, item.title, false)), "", "## Tomorrow"];
     note = {
       id: uid(), folderId: daily.id, type: "daily", date,
       title: formatHuman(date), body: lines.join("\n")
     };
     state.notes.push(note);
+    attachNewFile(note);
   } else {
     const have = new Set(parseChecks(note.body).map(check => check.title.trim()));
     insertChecks(note, copying.filter(item => !have.has(item.title)).map(item => checkLine(item.indent, item.title, false)));
@@ -1661,17 +1983,9 @@ function rollover() {
       task.done = true;
       task.status = "done";
     }
-    const lines = prev.body.split("\n");
-    const index = lines.findIndex(line => {
-      const match = line.match(/^(\s*)- \[ \](.*)$/);
-      return match && match[2].trim() === item.title;
-    });
-    if (index < 0) return;
-    const match = lines[index].match(/^(\s*)- \[ \](.*)$/);
-    lines[index] = `${match[1]}- [x]${match[2]}`;
-    prev.body = lines.join("\n");
-    touched.add(prev);
+    if (markOpenCheck(prev, item.title, item.line)) touched.add(prev);
   });
+  relinkNoteTasks(note);
 
   state.selectedFolderId = daily.id;
   state.selectedNoteId = note.id;
@@ -1885,7 +2199,7 @@ $("tree").addEventListener("dragover", (e) => {
   document.querySelectorAll(".node.drop").forEach(node => node.classList.remove("drop"));
   folder.classList.add("drop");
 });
-$("tree").addEventListener("drop", (e) => {
+$("tree").addEventListener("drop", async (e) => {
   const folder = e.target.closest("[data-open]");
   document.querySelectorAll(".node.drop").forEach(node => node.classList.remove("drop"));
   if (!folder || !draggedNote) return;
@@ -1894,8 +2208,32 @@ $("tree").addEventListener("drop", (e) => {
   const dest = folderById(folder.dataset.open);
   draggedNote = null;
   if (!note || !dest || note.folderId === dest.id) return;
+  const handle = fileHandles.get(note.id);
+  const dir = dirHandles.get(dest.id);
+  if (!handle) {
+    toast("This browser cannot move the file");
+    return;
+  }
+    if (!dir) {
+      toast("Could not move the file");
+      return;
+    }
+    try {
+      if (typeof handle.move === "function") await handle.move(dir);
+      else {
+        const created = await dir.getFileHandle(note.fileName, { create: true });
+        const writable = await created.createWritable();
+        await writable.write(note.body);
+        await writable.close();
+        await handle.remove();
+        fileHandles.set(note.id, created);
+        written.set(note.id, note.body);
+      }
+    } catch (err) {
+      toast("Could not move the file");
+      return;
+    }
   note.folderId = dest.id;
-  if (note.type === "daily") note.type = "note";
   state.tasks.forEach(task => { if (task.dailyNoteId === note.id) task.folderId = dest.id; });
   state.collapsed[dest.id] = false;
   openNote(note.id);
@@ -1919,22 +2257,14 @@ $("search").addEventListener("input", (e) => {
   save();
 });
 $("btnToday").addEventListener("click", rollover);
+$("btnOpen").addEventListener("click", openFolder);
+$("folderInput").addEventListener("change", (e) => {
+  if (e.target.files && e.target.files.length) readDroppedFiles(e.target.files);
+  e.target.value = "";
+});
 $("btnAddNote").addEventListener("click", addNote);
 $("btnJump").addEventListener("click", openPalette);
 $("btnAddFolder").addEventListener("click", () => openModal("folder", "New folder", "Name"));
-$("btnReset").addEventListener("click", () => {
-  suppressFocusSave = true;
-  $("book").innerHTML = "";
-  state = seed();
-  localStorage.removeItem(KEY);
-  editingNote = false;
-  $("search").value = "";
-  lastRenderedNote = null;
-  lastRenderedView = null;
-  lastRenderedFolder = null;
-  render();
-  toast("Demo restored");
-});
 $("toastUndo").addEventListener("click", () => {
   const fn = undoFn;
   undoFn = null;
@@ -1943,6 +2273,10 @@ $("toastUndo").addEventListener("click", () => {
 });
 
 $("spread").addEventListener("click", (e) => {
+  if (e.target.closest("[data-open-folder]")) {
+    openFolder();
+    return;
+  }
   if (e.target.id === "peekTab") {
     state.peekOpen = !state.peekOpen;
     render();
@@ -1954,11 +2288,7 @@ $("spread").addEventListener("submit", (e) => {
     e.preventDefault();
     const title = new FormData(e.target).get("title").trim();
     if (!title) return;
-    const folder = folderById(state.selectedFolderId);
-    const dailyNote = folder && folder.name === "Daily" && !folder.parentId
-      ? (state.notes.find(n => n.id === state.selectedNoteId && n.type === "daily")
-        || state.notes.find(n => n.type === "daily" && n.date === todayISO()))
-      : null;
+    const dailyNote = state.notes.find(n => n.id === state.selectedNoteId && n.type === "daily") || null;
     state.tasks.push({
       id: uid(), folderId: state.selectedFolderId, title, done: false, status: "todo",
       parentId: null, dailyNoteId: dailyNote ? dailyNote.id : null,
@@ -2004,8 +2334,15 @@ $("spread").addEventListener("change", (e) => {
   }
   render();
 });
+let writeTimer = 0;
 $("spread").addEventListener("input", (e) => {
   if (e.target.id === "noteTitle") fitTitle(e.target);
+  if (e.target.id !== "noteTitle" && e.target.id !== "noteBody") return;
+  clearTimeout(writeTimer);
+  writeTimer = setTimeout(() => {
+    const note = flushEditor();
+    if (note) writeNote(note);
+  }, 400);
 });
 function lineSpan(value, index) {
   const start = value.lastIndexOf("\n", Math.max(0, index - 1)) + 1;
@@ -2096,7 +2433,8 @@ $("spread").addEventListener("keydown", (e) => {
 $("spread").addEventListener("focusout", (e) => {
   if (suppressFocusSave) return;
   if (e.target.id !== "noteTitle" && e.target.id !== "noteBody") return;
-  flushEditor();
+  const note = flushEditor();
+  if (note) writeNote(note);
   save();
   if (e.target.id === "noteTitle") renderTree();
 });
@@ -2119,8 +2457,16 @@ $("spread").addEventListener("dblclick", (e) => {
       task.title = next;
       const note = task.dailyNoteId ? state.notes.find(n => n.id === task.dailyNoteId) : null;
       if (note) {
-        note.body = note.body.replace(`- [ ] ${previous}`, `- [ ] ${next}`).replace(`- [x] ${previous}`, `- [x] ${next}`);
-        syncEditor(note);
+        const lines = note.body.split("\n");
+        const index = findCheckIndex(lines, previous, task.line);
+        if (index >= 0) {
+          const item = checkboxAt(lines[index]);
+          lines[index] = checkLine(item.indent, next, item.mark !== " ");
+          note.body = lines.join("\n");
+          task.line = index;
+          relinkNoteTasks(note);
+          syncEditor(note);
+        }
       }
     }
     render();
@@ -2146,11 +2492,27 @@ $("spread").addEventListener("click", (e) => {
     const parent = state.tasks.find(item => item.id === sub.dataset.sub);
     if (!parent) return;
     const id = uid();
+    const note = parent.dailyNoteId ? state.notes.find(item => item.id === parent.dailyNoteId) : null;
+    if (note) {
+      const lines = note.body.split("\n");
+      const at = findCheckIndex(lines, parent.title, parent.line);
+      const indent = at >= 0 ? lines[at].match(/^(\s*)/)[1] : "";
+      const childIndent = indent.includes("\t") ? `${indent}\t` : `${indent}  `;
+      const row = `${childIndent}- [ ] Untitled`;
+      if (at >= 0) {
+        lines.splice(at + 1, 0, row);
+        note.body = lines.join("\n");
+      } else {
+        insertChecks(note, [row]);
+      }
+      syncEditor(note);
+    }
     state.tasks.push({
       id, folderId: parent.folderId, title: "Untitled", done: false, status: "todo",
       parentId: parent.id, dailyNoteId: parent.dailyNoteId, dailyDate: parent.dailyDate,
       rolledFrom: null, rolledFromDate: null, scheduledFor: null
     });
+    if (note) relinkNoteTasks(note);
     render();
     const created = document.querySelector(`[data-rename-display="${id}"]`);
     if (created) created.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
@@ -2203,13 +2565,14 @@ $("spread").addEventListener("drop", (e) => {
   const note = task.dailyNoteId ? state.notes.find(n => n.id === task.dailyNoteId) : null;
   if (note) {
     const lines = note.body.split("\n");
-    const index = lines.findIndex(line => {
-      const match = line.match(/^\s*- \[[ xX]\]\s?(.*)$/);
-      return match && match[1] === task.title;
-    });
-    if (index >= 0) lines[index] = lines[index].replace(/- \[[ xX]\]/, task.done ? "- [x]" : "- [ ]");
-    note.body = lines.join("\n");
-    syncEditor(note);
+    const index = findCheckIndex(lines, task.title, task.line);
+    if (index >= 0) {
+      const item = checkboxAt(lines[index]);
+      lines[index] = checkLine(item.indent, item.title, task.done);
+      note.body = lines.join("\n");
+      relinkNoteTasks(note);
+      syncEditor(note);
+    }
   }
   render();
 });
@@ -2313,12 +2676,28 @@ document.addEventListener("scroll", hideSlip, true);
 
 $("modalCancel").addEventListener("click", closeModal);
 $("modalBg").addEventListener("click", (e) => { if (e.target.id === "modalBg") closeModal(); });
-$("modal").addEventListener("submit", (e) => {
+$("modal").addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = $("modalInput").value.trim();
   if (!name || modalMode !== "folder") return;
+  if (!rootHandle) {
+    toast("Open a folder first");
+    return;
+  }
   const id = uid();
   const parent = state.selectedFolderId || null;
+  const parentHandle = parent ? dirHandles.get(parent) : rootHandle;
+  if (!parentHandle) {
+    toast("Could not create the folder");
+    return;
+  }
+  try {
+    const handle = await parentHandle.getDirectoryHandle(name, { create: true });
+    dirHandles.set(id, handle);
+  } catch (err) {
+    toast("Could not create the folder");
+    return;
+  }
   if (parent) state.collapsed[parent] = false;
   state.folders.push({ id, name, parentId: parent });
   state.selectedFolderId = id;
@@ -2373,16 +2752,9 @@ document.addEventListener("keydown", (e) => {
 function applyRoute() {
   const hash = (location.hash || "").replace(/^#/, "");
   if (hash === "tasks" || hash === "board" || hash === "notes") state.view = hash;
-  if (hash === "q4") {
-    state.selectedFolderId = "f-q4";
-    state.view = "tasks";
-    state.collapsed["f-work"] = false;
-    state.collapsed["f-clients"] = false;
-    state.collapsed["f-acme"] = false;
-  }
   if (hash === "daily") {
-    state.selectedFolderId = "f-daily";
-    state.view = "notes";
+    const daily = ensureDaily();
+    if (daily) state.selectedFolderId = daily.id;
     const today = state.notes.find(n => n.type === "daily" && n.date === todayISO());
     if (today) state.selectedNoteId = today.id;
   }
@@ -2391,9 +2763,19 @@ function applyRoute() {
 $("search").value = state.query || "";
 $("jumpKbd").textContent = `${metaKey}K`;
 $("paletteFoot").textContent = "N opens today. [ and ] turn the page.";
+localStorage.removeItem(KEY);
 
-if ((location.hash || "").replace(/^#/, "") === "rollover") rollover();
-else { applyRoute(); render(); }
+applyRoute();
+render();
+storedHandle().then(async (handle) => {
+  if (handle && !state.notes.length) {
+    try {
+      const perm = await handle.queryPermission({ mode: "readwrite" });
+      if (perm === "granted") await openRoot(handle);
+    } catch (err) { /* the Open folder button asks again */ }
+  }
+  if ((location.hash || "").replace(/^#/, "") === "rollover") rollover();
+});
 window.addEventListener("hashchange", () => {
   if ((location.hash || "").replace(/^#/, "") === "rollover") rollover();
   else { applyRoute(); render(); }

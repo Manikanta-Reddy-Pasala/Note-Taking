@@ -42,4 +42,4 @@ Press Edit on a note.
 - Tab nests the current line as a subtopic. Shift+Tab, or Backspace at the start of the checkbox, brings it back out.
 - Enter on an empty checkbox leaves the list.
 
-The ↺ control at the bottom of the vault puts the sample notes back.
+Open folder reads a directory of markdown files. A note named `YYYY-MM-DD.md` is a daily note. Edits write back to those files in Chrome and Edge.
