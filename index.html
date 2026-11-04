@@ -308,6 +308,34 @@
     .preview h1, .preview h2, .preview h3 { font-weight: 500; letter-spacing: -0.02em; line-height: 1.25; }
     .preview h1 { font-size: 28px; margin: 0.6em 0 0.3em; }
     .preview h2 { font-size: 22px; margin: 1em 0 0.3em; }
+    .preview .section-label {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--mute);
+      margin: 1.5em 0 0.45em;
+    }
+    .preview .todo {
+      --nest: 0;
+      margin: 0 0 2px calc(var(--nest) * 22px);
+      border-radius: 10px;
+    }
+    .preview .todo .row {
+      min-height: 42px;
+      padding: 8px 12px;
+      gap: 12px;
+      border-radius: 10px;
+      background: var(--page);
+    }
+    .preview .todo:hover .row { background: var(--hover); }
+    .preview .todo .line {
+      font-size: 17px;
+      line-height: 1.35;
+    }
+    .preview .todo.nested .row { box-shadow: inset 2px 0 0 var(--line); }
+    .preview .check { width: 18px; height: 18px; border-radius: 50%; }
     .preview h3 { font-size: 18px; margin: 0.8em 0 0.25em; }
     .preview p { margin: 0.35em 0; }
     .preview .bullet { padding-left: 1em; text-indent: -0.8em; }
@@ -465,6 +493,37 @@
     .peek-add { margin-top: 12px; }
     .peek-add input { width: 100%; }
 
+    .menu {
+      position: fixed;
+      z-index: 60;
+      min-width: 196px;
+      background: var(--page);
+      color: var(--ink);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      padding: 4px;
+    }
+    .menu[hidden] { display: none; }
+    .menu button {
+      width: 100%;
+      text-align: left;
+      border: 0;
+      background: transparent;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font: inherit;
+    }
+    .menu button:hover { background: var(--hover); }
+    .daily-mark {
+      margin-left: auto;
+      color: var(--leaf);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .node { display: flex; align-items: center; }
+
     .slip {
       position: fixed;
       z-index: 50;
@@ -620,7 +679,7 @@
     <div class="side-foot">
       <div>
         <div id="footMeta">No folder open</div>
-        <div class="hint">Swipe a task right for tomorrow. Drag the page edge to turn.</div>
+        <div class="hint">Right-click a folder to mark it as the daily folder.</div>
       </div>
     </div>
   </aside>
@@ -631,11 +690,6 @@
       <div class="top-actions">
         <button class="text-btn" id="btnJump" type="button">Jump <kbd id="jumpKbd">⌘K</kbd></button>
         <button class="text-btn" id="btnAddNote" type="button">New note</button>
-        <nav class="views" role="tablist" aria-label="Views">
-          <button class="view" type="button" data-view="notes" role="tab">Notes</button>
-          <button class="view" type="button" data-view="tasks" role="tab">Tasks</button>
-          <button class="view" type="button" data-view="board" role="tab">Board</button>
-        </nav>
       </div>
     </header>
     <div class="spread" id="spread">
@@ -643,6 +697,10 @@
       <aside class="peek" id="peek"></aside>
     </div>
   </main>
+
+  <div class="menu" id="folderMenu" hidden>
+    <button type="button" id="markDaily">Mark as daily folder</button>
+  </div>
 
   <div class="slip" id="slip" role="tooltip" hidden>
     <strong id="slipTitle"></strong>
@@ -803,6 +861,7 @@ function adoptVault(name, folders, notes) {
   next.view = "notes";
   state = next;
   notes.forEach(note => written.set(note.id, note.body));
+  applySavedDaily();
 }
 function buildFromList(entries) {
   fileHandles.clear();
@@ -1001,6 +1060,7 @@ let slipTimer = 0;
 let paletteIndex = 0;
 let paletteItems = [];
 let draggedNote = null;
+let menuFolderId = null;
 const metaKey = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl+";
 
 let suppressFocusSave = false;
@@ -1190,14 +1250,13 @@ function renderNode(folder, depth) {
   const kids = childrenOf(folder.id);
   const notes = orderedNotes(folder.id).filter(note => noteVisible(note, folder));
   const open = state.query ? true : !state.collapsed[folder.id];
-  const openTasks = tasksIn(folder.id).filter(task => !task.done && !task.parentId).length;
-  const active = folder.id === state.selectedFolderId && state.view !== "notes" ? "active" : "";
+  const active = folder.id === state.selectedFolderId ? "active" : "";
   const hasTwist = kids.length || notes.length;
   const chev = hasTwist
     ? `<button class="chev ${open ? "open" : ""}" type="button" data-toggle="${folder.id}" aria-label="${open ? "Collapse" : "Expand"} ${escAttr(folder.name)}">${chevSvg()}</button>`
     : `<span class="chev empty">${chevSvg()}</span>`;
   let out = `<div class="node ${active}" data-open="${folder.id}" style="padding-left:${8 + depth * 14}px">
-    ${chev}<span class="fname">${esc(folder.name)}</span><span class="count">${openTasks || ""}</span>
+    ${chev}<span class="fname">${esc(folder.name)}</span>${folder.daily ? `<span class="daily-mark">Daily</span>` : ""}
   </div>`;
   if (open) {
     out += kids.map(kid => renderNode(kid, depth + 1)).join("");
@@ -1206,7 +1265,7 @@ function renderNode(folder, depth) {
   return out;
 }
 function renderLeaf(note, depth) {
-  const on = note.id === state.selectedNoteId && state.view === "notes" ? "active" : "";
+  const on = note.id === state.selectedNoteId ? "active" : "";
   return `<div class="leaf ${on}" data-note="${note.id}" tabindex="0" role="button" draggable="true" style="padding-left:${8 + depth * 14}px">
     <span class="leaf-mark" aria-hidden="true"></span>
     <span class="fname">${esc(noteLabel(note))}</span>
@@ -1243,9 +1302,8 @@ function renderMain() {
   }
   const path = pathOf(folder.id);
   $("crumb").innerHTML = path.map((p, i) => i === path.length - 1 ? `<b>${esc(p.name)}</b>` : esc(p.name)).join(" / ");
-  if (state.view === "tasks") renderTasks(folder);
-  else if (state.view === "board") renderBoard(folder);
-  else renderNotes(folder);
+  state.view = "notes";
+  renderNotes(folder);
   const note = currentNote();
   document.title = note && state.view === "notes" ? `${note.title} — Folia` : `${folder.name} — Folia`;
 }
@@ -1336,7 +1394,7 @@ function renderMarkdown(note) {
       const task = taskForLine(note, check[3]);
       const inTomorrow = sectionOf(lines, i) === "tomorrow";
       const labels = task ? swipeLabels(task) : { left: on ? "Reopen" : "Done", right: inTomorrow ? "Today" : peekLabel() };
-      html += `<div class="swipe" data-swipe="${task ? task.id : ""}" data-line="${i}" style="margin-left:${depth * 16}px">
+      html += `<div class="swipe todo ${depth ? "nested" : ""}" data-swipe="${task ? task.id : ""}" data-line="${i}" style="--nest:${depth}">
         <div class="under"><span>${esc(labels.right)}</span><span>${esc(labels.left)}</span></div>
         <div class="row">
           <input class="check" type="checkbox" ${on ? "checked" : ""} data-md-line="${i}" aria-label="${escAttr(check[3])}" />
@@ -1349,7 +1407,10 @@ function renderMarkdown(note) {
     if (heading) {
       const level = heading[1].length;
       if (level === 1 && heading[2].trim() === note.title.trim()) return;
-      html += `<h${level}>${inline(heading[2])}</h${level}>`;
+      const section = /^(todo|today|tomorrow)$/i.test(heading[2].trim());
+      html += section
+        ? `<h${level} class="section-label">${inline(heading[2])}</h${level}>`
+        : `<h${level}>${inline(heading[2])}</h${level}>`;
       return;
     }
     const bullet = line.match(/^\s*(?:[-*]|\d+\.)\s+(.*)$/);
@@ -1442,12 +1503,10 @@ function render() {
   lastRenderedView = state.view;
   lastRenderedFolder = state.selectedFolderId;
   fitTitle($("noteTitle"));
-  const today = todayISO();
-  const open = state.tasks.filter(task => !task.done && !task.parentId && !(task.scheduledFor && task.scheduledFor > today)).length;
-  const later = tomorrowTasks().length;
-  $("footMeta").textContent = state.folderName
-    ? `${state.folderName} · ${open} open, ${later} ${peekLabel().toLowerCase()}`
-    : "No folder open";
+  const daily = state.folders.find(folder => folder.daily);
+  $("footMeta").textContent = !state.folderName
+    ? "No folder open"
+    : (daily ? `${state.folderName} · daily is ${daily.name}` : state.folderName);
   save();
   suppressFocusSave = false;
   state.notes.forEach(note => writeNote(note));
@@ -1792,34 +1851,44 @@ function showTask(task) {
     state.selectedNoteId = task.dailyNoteId;
     state.view = "notes";
   } else {
-    state.view = "tasks";
+    state.view = "notes";
   }
   state.peekOpen = true;
   render();
 }
 
+function dailyStorageKey() {
+  return `folia.daily:${state.folderName || ""}`;
+}
+function folderPath(folder) {
+  return pathOf(folder.id).map(item => item.name).join("/");
+}
+function applySavedDaily() {
+  const saved = localStorage.getItem(dailyStorageKey());
+  state.folders.forEach(folder => { folder.daily = false; });
+  if (!saved) return;
+  const match = state.folders.find(folder => folderPath(folder) === saved);
+  if (match) match.daily = true;
+}
+function markDaily(id) {
+  const folder = folderById(id);
+  if (!folder) return;
+  state.folders.forEach(item => { item.daily = item.id === id; });
+  localStorage.setItem(dailyStorageKey(), folderPath(folder));
+  pathOf(id).forEach(item => { state.collapsed[item.id] = false; });
+  state.selectedFolderId = id;
+  render();
+  toast(`${folder.name} is the daily folder`);
+}
 function ensureDaily() {
-  const named = state.folders
-    .filter(folder => /daily/i.test(folder.name))
-    .map(folder => ({
-      folder,
-      count: state.notes.filter(note => note.folderId === folder.id && note.date).length
-    }))
-    .sort((a, b) => b.count - a.count);
-  if (named[0]) return named[0].folder;
-  const ranked = state.folders.map(folder => ({
-    folder,
-    count: state.notes.filter(note => note.folderId === folder.id && note.date).length
-  })).sort((a, b) => b.count - a.count);
-  if (ranked[0] && ranked[0].count) return ranked[0].folder;
-  return state.folders.find(folder => !folder.parentId) || null;
+  return state.folders.find(folder => folder.daily) || null;
 }
 function addForDate(title, date) {
   const ownerDate = addDays(date, -1);
   const daily = ensureDaily();
   let owner = state.notes.find(n => n.type === "daily" && n.date === ownerDate);
   if (!daily) {
-    toast("Open a folder first");
+    toast(state.folders.length ? "Right-click a folder and mark it as the daily folder" : "Open a folder first");
     return;
   }
   if (!owner && ownerDate === todayISO()) {
@@ -1852,7 +1921,7 @@ function rollover() {
   const date = todayISO();
   const daily = ensureDaily();
   if (!daily) {
-    toast("Open a folder first");
+    toast(state.folders.length ? "Right-click a folder and mark it as the daily folder" : "Open a folder first");
     return;
   }
   let note = state.notes.find(n => n.type === "daily" && n.date === date);
@@ -2064,10 +2133,7 @@ function paletteActions() {
   return [
     { label: "Open today", hint: "N", run: rollover },
     { label: "New note", hint: "Here", run: addNote },
-    { label: "New folder", hint: "Vault", run: () => openModal("folder", "New folder", "Name") },
-    { label: "Notes", hint: "View", run: () => { state.view = "notes"; render(); } },
-    { label: "Tasks", hint: "View", run: () => { state.view = "tasks"; render(); } },
-    { label: "Board", hint: "View", run: () => { state.view = "board"; render(); } }
+    { label: "New folder", hint: "Vault", run: () => openModal("folder", "New folder", "Name") }
   ];
 }
 function buildPalette(query) {
@@ -2244,12 +2310,24 @@ $("tree").addEventListener("dragend", () => {
   document.querySelectorAll(".node.drop").forEach(node => node.classList.remove("drop"));
 });
 
-document.querySelector(".views").addEventListener("click", (e) => {
-  const tab = e.target.closest(".view");
-  if (!tab) return;
-  state.view = tab.dataset.view;
-  editingNote = false;
-  render();
+$("tree").addEventListener("contextmenu", (e) => {
+  const node = e.target.closest("[data-open]");
+  if (!node) return;
+  e.preventDefault();
+  menuFolderId = node.dataset.open;
+  const folder = folderById(menuFolderId);
+  $("markDaily").textContent = folder && folder.daily ? "Daily folder" : "Mark as daily folder";
+  const menu = $("folderMenu");
+  menu.hidden = false;
+  menu.style.left = `${Math.min(e.clientX, window.innerWidth - menu.offsetWidth - 8)}px`;
+  menu.style.top = `${Math.min(e.clientY, window.innerHeight - menu.offsetHeight - 8)}px`;
+});
+$("markDaily").addEventListener("click", () => {
+  if (menuFolderId) markDaily(menuFolderId);
+  $("folderMenu").hidden = true;
+});
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#folderMenu")) $("folderMenu").hidden = true;
 });
 $("search").addEventListener("input", (e) => {
   state.query = e.target.value;
@@ -2751,7 +2829,7 @@ document.addEventListener("keydown", (e) => {
 
 function applyRoute() {
   const hash = (location.hash || "").replace(/^#/, "");
-  if (hash === "tasks" || hash === "board" || hash === "notes") state.view = hash;
+  if (hash === "notes" || hash === "tasks" || hash === "board") state.view = "notes";
   if (hash === "daily") {
     const daily = ensureDaily();
     if (daily) state.selectedFolderId = daily.id;

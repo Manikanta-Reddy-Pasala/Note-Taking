@@ -27,10 +27,7 @@ Each daily note has a Today section and a Tomorrow section. The green edge on th
 ![Tasks for the day, with tomorrow marked on two of them](screenshots/tasks.png)
 
 - Swipe a task right to schedule it for the day on that edge. Swipe left to complete it.
-- **Open today** (or press N) copies unfinished tasks from earlier days onto today, and checks them off on the old page so they are not copied again.
-- **Board** groups the same tasks into Open, Doing, and Done. Drag a card between columns.
-
-![Launch tasks on the board](screenshots/board.png)
+- **Open today** (or press N) copies unfinished tasks from the latest daily note onto today. Right-click a folder and mark it as the daily folder first.
 
 ## Editing
 
