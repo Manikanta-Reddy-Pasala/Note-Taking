@@ -6,7 +6,7 @@
   <title>Folia</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
   <style>
     :root {
       --desk: #d7e1ea;
@@ -636,6 +636,125 @@
     .pal-item small { color: var(--mute); }
     .pal-foot { color: var(--faint); font-size: 13px; padding: 8px 16px 12px; }
 
+    /* Vault theme: flat panes, one sans face, quiet accent, compact task lists. */
+    :root {
+      --desk: #f6f6f6;
+      --page: #ffffff;
+      --under: #f6f6f6;
+      --ink: #222222;
+      --mute: #5c5c5c;
+      --faint: #7a7a7a;
+      --line: #e3e3e3;
+      --leaf: #6a55cc;
+      --leaf-soft: rgba(106, 85, 204, 0.12);
+      --hover: #ececec;
+      --under-done: #4a4a4a;
+      --under-next: #6a55cc;
+      --code: #f2f2f2;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+      --sans: Inter, ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --serif: var(--sans);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --desk: #262626;
+        --page: #1e1e1e;
+        --under: #262626;
+        --ink: #dadada;
+        --mute: #b3b3b3;
+        --faint: #8f8f8f;
+        --line: #363636;
+        --leaf: #a88bfa;
+        --leaf-soft: rgba(138, 92, 245, 0.2);
+        --hover: #303030;
+        --under-done: #3f3f3f;
+        --under-next: #7f6df2;
+        --code: #2a2a2a;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+    }
+    body { font-size: 14px; background: var(--page); }
+    .rail { background: var(--desk); border-right: 1px solid var(--line); }
+    .brand { padding: 14px 14px 4px; }
+    .brand h1 { font-family: var(--sans); font-weight: 600; font-size: 16px; letter-spacing: 0; }
+    .brand small { font-size: 12px; }
+    .mark { width: 22px; height: 22px; }
+    .today-btn, .text-btn, .ghost {
+      background: var(--hover); border: 1px solid transparent; border-radius: 4px; font-weight: 500; font-size: 13px;
+    }
+    .today-btn { margin: 8px 10px 4px; padding: 6px 10px; }
+    .today-btn:hover, .text-btn:hover, .ghost:hover { border-color: transparent; color: var(--ink); filter: brightness(1.08); }
+    .search {
+      margin: 8px 10px 10px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--page);
+    }
+    .search:focus-within { border-color: var(--leaf); }
+    .tree-label { padding: 4px 14px 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .tree { padding: 0 6px 12px; }
+    .node, .leaf { padding: 3px 8px; border-radius: 4px; font-size: 14px; color: var(--mute); gap: 4px; }
+    .node { color: var(--ink); }
+    .node:hover, .leaf:hover { background: var(--hover); color: var(--ink); }
+    .node.active, .leaf.active { background: var(--hover); color: var(--ink); }
+    .leaf.active { background: var(--leaf-soft); }
+    .leaf-mark { width: 4px; height: 4px; border-radius: 50%; margin: 0 6px 0 8px; }
+    .daily-mark { font-size: 10px; }
+    .side-foot { font-size: 12px; padding: 10px 14px 12px; }
+    .main { background: var(--page); }
+    .topbar { min-height: 42px; padding: 6px 16px; border-bottom: 1px solid var(--line); }
+    .path { font-size: 13px; }
+    .spread { padding: 0; }
+    .sheet { box-shadow: none; border-radius: 0; background: var(--page); }
+    .edge { width: 28px; opacity: 0.55; }
+    .edge:hover { opacity: 1; background: var(--hover); }
+    .prose { max-width: 760px; margin: 0 auto; padding: 8px 48px 64px; }
+    .sheet-head { background: var(--page); }
+    .ed-title {
+      font-family: var(--sans); font-weight: 700; font-size: 30px; letter-spacing: -0.015em; line-height: 1.2; padding: 10px 0 12px;
+    }
+    .ed-body {
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 14px; line-height: 1.7;
+    }
+    .preview { font-family: var(--sans); font-size: 16px; line-height: 1.6; }
+    .preview h1, .preview h2, .preview h3 { font-weight: 700; letter-spacing: -0.01em; }
+    .preview h1 { font-size: 26px; }
+    .preview h2, .preview .section-label {
+      font-family: var(--sans); font-size: 21px; font-weight: 700; letter-spacing: -0.01em;
+      text-transform: none; color: var(--ink); margin: 1.1em 0 0.35em;
+    }
+    .preview h3 { font-size: 18px; }
+    .preview .todo { margin: 0 0 0 calc(var(--nest) * 26px); border-radius: 4px; }
+    .preview .todo .row { min-height: 0; padding: 3px 6px; gap: 10px; border-radius: 4px; align-items: flex-start; }
+    .preview .todo .line { font-size: 16px; line-height: 1.6; }
+    .preview .todo.nested .row { box-shadow: inset 1px 0 0 var(--line); padding-left: 14px; margin-left: -8px; }
+    .preview .check, .check {
+      width: 15px; height: 15px; border-radius: 4px; border: 1px solid var(--faint); margin-top: 0.38em; cursor: pointer;
+    }
+    .check:hover { border-color: var(--leaf); }
+    .check:checked { background: var(--leaf); border-color: var(--leaf); }
+    .check:checked::after { border-color: #ffffff; width: 7px; height: 4px; }
+    .t-title.done, .line.done { color: var(--faint); }
+    .swipe { border-radius: 4px; }
+    .under { opacity: 0; transition: opacity 0.1s; }
+    .swipe.moving .under, body.gesturing .under { opacity: 1; }
+    .preview .bullet { padding-left: 1.4em; text-indent: 0; position: relative; }
+    .preview .bullet::before {
+      content: ""; position: absolute; left: 0.45em; top: 0.72em; width: 5px; height: 5px; border-radius: 50%; background: var(--faint);
+    }
+    .preview code { background: var(--code); }
+    .wikilink { color: var(--leaf); text-decoration: none; }
+    .wikilink:hover { text-decoration: underline; }
+    .wikilink.missing { color: var(--leaf); opacity: 0.6; text-decoration: none; }
+    .mentions h2 { font-size: 15px; font-weight: 600; color: var(--mute); }
+    .mentions a { font-size: 15px; }
+    .peek { background: var(--desk); border-left: 1px solid var(--line); margin-left: 0; padding-left: 0; border-radius: 0; width: 40px; }
+    .peek.open { width: 300px; }
+    .peek-tab { width: 38px; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--mute); }
+    .peek.open .peek-tab, .peek-tab:hover { color: var(--leaf); }
+    .peek-body h2 { font-family: var(--sans); font-weight: 700; font-size: 18px; }
+    .peek-body { padding: 14px 14px 14px 4px; }
+    .menu, .slip, .modal, .palette { border-radius: 8px; border: 1px solid var(--line); background: var(--page); }
+    .slip strong, .modal h3 { font-family: var(--sans); font-weight: 600; font-size: 16px; }
+    .slip p { font-family: var(--sans); font-size: 13px; }
+    .toast { border-radius: 6px; }
     @media (max-width: 980px) {
       .rail { width: 208px; min-width: 208px; }
       .prose { padding: 8px 28px 40px; }
@@ -969,6 +1088,7 @@ async function openRoot(handle) {
   lastRenderedNote = null;
   render();
   toast(notes.length ? `Opened ${notes.length} notes` : "That folder has no markdown files");
+  autoRollover();
 }
 function dirDb() {
   return new Promise((resolve, reject) => {
@@ -1160,7 +1280,10 @@ function neighbor(dir) {
 function findNote(title) {
   const q = String(title || "").trim().toLowerCase();
   if (!q) return null;
-  return state.notes.find(n => n.title.toLowerCase() === q) || null;
+  return state.notes.find(n => n.title.toLowerCase() === q)
+    || state.notes.find(n => n.date === q)
+    || state.notes.find(n => (n.fileName || "").replace(/\.md$/i, "").toLowerCase() === q)
+    || null;
 }
 function notePlace(note) {
   const parts = pathOf(note.folderId).map(f => f.name);
@@ -1936,6 +2059,7 @@ function markDaily(id) {
   state.selectedFolderId = id;
   render();
   toast(`${folder.name} is the daily folder`);
+  autoRollover();
 }
 function ensureDaily() {
   return state.folders.find(folder => folder.daily) || null;
@@ -1973,158 +2097,141 @@ function addForDate(title, date) {
   toast(`Set for ${formatHuman(date)}`);
 }
 
-function rollover() {
+// Open tasks that carry from a daily note to the next day. Each item keeps
+// its place under the nearest open parent; a done parent is not carried, so
+// its open children move up a level. The source note is never changed.
+function carriedFrom(prev, date) {
+  const lines = prev.body.split("\n");
+  const out = [];
+  let stack = [];
+  lines.forEach((line, i) => {
+    if (/^#{1,6}\s/.test(line)) { stack = []; return; }
+    const item = checkboxAt(line);
+    if (!item) return;
+    while (stack.length && stack[stack.length - 1].depth >= item.depth) stack.pop();
+    const open = stack.filter(entry => entry.open);
+    const linked = state.tasks.find(task => task.dailyNoteId === prev.id && task.line === i);
+    const later = linked && linked.scheduledFor && linked.scheduledFor > date;
+    const carry = item.mark === " " && !later;
+    stack.push({ depth: item.depth, open: carry, title: item.title });
+    if (!carry) return;
+    out.push({ title: item.title, depth: open.length, parent: open.length ? open[open.length - 1].title : null });
+  });
+  return out;
+}
+function todoSectionEnd(lines) {
+  let at = lines.findIndex(line => /^##\s+(today|todo)\b/i.test(line.trim()));
+  if (at < 0) {
+    lines.unshift("## todo", "");
+    at = 0;
+  }
+  let end = at + 1;
+  while (end < lines.length && !/^#{1,6}\s/.test(lines[end])) end += 1;
+  while (end > at + 1 && !lines[end - 1].trim()) end -= 1;
+  return end;
+}
+function mergeCarried(note, items) {
+  const lines = note.body.split("\n");
+  const present = new Set(parseChecks(note.body).map(check => check.title.trim()));
+  let added = 0;
+  items.forEach(item => {
+    if (present.has(item.title)) return;
+    let at = -1;
+    let indent = "  ".repeat(item.depth);
+    if (item.parent) {
+      const parentAt = findCheckIndex(lines, item.parent);
+      if (parentAt >= 0) {
+        at = blockEnd(lines, parentAt);
+        while (at > parentAt + 1 && !lines[at - 1].trim()) at -= 1;
+        indent = `${checkboxAt(lines[parentAt]).indent}  `;
+      }
+    }
+    if (at < 0) {
+      at = todoSectionEnd(lines);
+      if (!item.parent) indent = "";
+    }
+    lines.splice(at, 0, checkLine(indent, item.title, false));
+    present.add(item.title);
+    added += 1;
+  });
+  note.body = lines.join("\n");
+  return added;
+}
+function rolledKey(date) {
+  return `folia.rolled:${state.folderName || ""}:${date}`;
+}
+function rollover(quiet) {
   flushEditor();
   const date = todayISO();
   const daily = ensureDaily();
   if (!daily) {
-    toast(state.folders.length ? "Right-click a folder and mark it as the daily folder" : "Open a folder first");
+    if (!quiet) toast(state.folders.length ? "Right-click a folder and mark it as the daily folder" : "Open a folder first");
     return;
   }
-  let note = state.notes.find(n => n.type === "daily" && n.date === date);
-  const previous = state.notes
-    .filter(n => n.type === "daily" && n.date && n.date < date)
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 1);
-  const openTasks = [];
-  const closeOnly = [];
-  const seen = new Set();
-  const consider = (title, fromId, fromDate, scheduledFor, indent, parentId, line) => {
-    const name = String(title || "").trim();
-    if (!name) return;
-    if (scheduledFor && scheduledFor > date) return;
-    const item = { title: name, fromId, fromDate, indent: indent || "", parentId: parentId || null, line: line == null ? null : line };
-    if (seen.has(fromId)) {
-      const existing = openTasks.find(entry => entry.fromId === fromId);
-      if (existing && existing.line == null && line != null) existing.line = line;
-      return;
-    }
-    seen.add(fromId);
-    openTasks.push(item);
-  };
-  previous.forEach(prev => {
-    const lines = prev.body.split("\n");
-    state.tasks.filter(task => task.dailyNoteId === prev.id && !task.done).forEach(task => {
-      consider(task.title, task.id, prev.date, task.scheduledFor, lineIndent(prev, task.title), task.parentId);
-    });
-    const claimed = new Set();
-    parseChecks(prev.body).forEach(check => {
-      if (check.done) return;
-      const linked = state.tasks.find(task => task.dailyNoteId === prev.id && task.line === check.line && !claimed.has(task.id))
-        || state.tasks.find(task => task.dailyNoteId === prev.id && !claimed.has(task.id) && task.title.trim() === check.title.trim());
-      if (linked) claimed.add(linked.id);
-      const scheduled = linked
-        ? linked.scheduledFor
-        : (sectionOf(lines, check.line) === "tomorrow" ? addDays(prev.date, 1) : null);
-      consider(check.title, linked ? linked.id : `${prev.id}:${check.line}`, prev.date, scheduled, check.indent, linked && linked.parentId, check.line);
-    });
-  });
-  state.tasks.filter(task => !task.done && !task.parentId && !task.dailyNoteId && task.scheduledFor === date).forEach(task => {
-    consider(task.title, task.id, null, null, "", task.parentId);
-  });
-
-  const copying = openTasks.filter(item => item.fromDate);
+  const prev = state.notes
+    .filter(n => n.type === "daily" && n.folderId === daily.id && n.date && n.date < date)
+    .sort((a, b) => b.date.localeCompare(a.date))[0] || null;
+  const items = prev ? carriedFrom(prev, date) : [];
+  let note = state.notes.find(n => n.type === "daily" && n.date === date && n.folderId === daily.id)
+    || state.notes.find(n => n.type === "daily" && n.date === date);
   const created = !note;
   if (!note) {
-    const lines = ["## todo", ...copying.map(item => checkLine(item.indent, item.title, false)), "", "## Tomorrow"];
     note = {
       id: uid(), folderId: daily.id, type: "daily", date,
-      title: formatHuman(date), body: lines.join("\n")
+      title: formatHuman(date), body: "## todo\n\n## Tomorrow\n",
+      fileName: `${date}.md`
     };
     state.notes.push(note);
-    attachNewFile(note);
-  } else {
-    const have = new Set(parseChecks(note.body).map(check => check.title.trim()));
-    insertChecks(note, copying.filter(item => !have.has(item.title)).map(item => checkLine(item.indent, item.title, false)));
   }
+  let added = mergeCarried(note, items);
 
-  const already = new Set(state.tasks.filter(task => task.dailyNoteId === note.id).map(task => task.title));
-  const rolled = new Map();
-  const adopted = [];
-  let added = 0;
-  const depthUnder = (member, rootId) => {
-    let depth = 0;
-    let current = member;
-    const guard = new Set();
-    while (current && current.id !== rootId && current.parentId && !guard.has(current.id)) {
-      guard.add(current.id);
-      depth += 1;
-      current = state.tasks.find(entry => entry.id === current.parentId);
-    }
-    return depth;
-  };
-  openTasks.forEach(item => {
-    if (!item.fromDate) {
-      const task = state.tasks.find(entry => entry.id === item.fromId);
-      if (!task || task.dailyNoteId) return;
-      const members = state.tasks.filter(entry => new Set(taskFamily(task.id)).has(entry.id));
-      const owners = new Map();
-      state.tasks.filter(entry => entry.dailyNoteId === note.id).forEach(entry => {
-        if (!owners.has(entry.title)) owners.set(entry.title, entry.id);
-      });
-      const present = new Set(parseChecks(note.body).map(check => check.title.trim()));
-      members.forEach(member => {
-        member.folderId = daily.id;
-        member.dailyNoteId = note.id;
-        member.dailyDate = date;
-        if (member.id === task.id) member.scheduledFor = null;
-      });
-      const rows = [];
-      members.forEach(member => {
-        if (member.done) return;
-        const owner = owners.get(member.title);
-        if (present.has(member.title) && (!owner || owner === member.id)) return;
-        rows.push(checkLine("  ".repeat(depthUnder(member, task.id)), member.title, false));
-        present.add(member.title);
-      });
-      insertChecks(note, rows);
-      rolled.set(task.id, task.id);
-      added++;
-      return;
-    }
-    if (already.has(item.title)) return;
-    const id = uid();
-    rolled.set(item.fromId, id);
-    adopted.push({ id, parentId: item.parentId });
-    state.tasks.push({
-      id, folderId: daily.id, title: item.title, done: false, status: "todo",
-      parentId: null, dailyNoteId: note.id, dailyDate: date,
-      rolledFrom: item.fromId, rolledFromDate: item.fromDate, scheduledFor: null
-    });
-    already.add(item.title);
-    added++;
-  });
-  adopted.forEach(row => {
-    const parent = row.parentId && rolled.get(row.parentId);
-    const task = state.tasks.find(entry => entry.id === row.id);
-    if (task && parent) task.parentId = parent;
-  });
-  const touched = new Set();
-  openTasks.concat(closeOnly).forEach(item => {
-    if (!item.fromDate) return;
-    const prev = previous.find(entry => entry.date === item.fromDate);
-    if (!prev) return;
-    const task = state.tasks.find(entry => entry.id === item.fromId);
-    if (task && task.dailyNoteId === prev.id && !task.done && !(task.scheduledFor && task.scheduledFor > date)) {
-      task.done = true;
-      task.status = "done";
-    }
-    if (markOpenCheck(prev, item.title, item.line)) touched.add(prev);
+  // Tasks scheduled for today before today's note existed.
+  state.tasks.filter(task => !task.done && !task.parentId && !task.dailyNoteId && task.scheduledFor === date).forEach(task => {
+    const family = taskFamily(task.id).map(id => state.tasks.find(entry => entry.id === id)).filter(Boolean);
+    const depthOf = (member) => {
+      let depth = 0;
+      let current = member;
+      while (current && current.id !== task.id && current.parentId) {
+        depth += 1;
+        current = state.tasks.find(entry => entry.id === current.parentId);
+      }
+      return depth;
+    };
+    const parentTitle = (member) => {
+      const parent = member.id === task.id ? null : state.tasks.find(entry => entry.id === member.parentId);
+      return parent ? parent.title : null;
+    };
+    added += mergeCarried(note, family.filter(member => !member.done).map(member => ({
+      title: member.title, depth: depthOf(member), parent: parentTitle(member)
+    })));
+    state.tasks = state.tasks.filter(entry => !family.includes(entry));
   });
   relinkNoteTasks(note);
+  if (created) attachNewFile(note);
+  try { localStorage.setItem(rolledKey(date), "1"); } catch (err) { /* rolls again next time */ }
 
+  if (quiet && !created && !added) return;
   state.selectedFolderId = daily.id;
   state.selectedNoteId = note.id;
   state.view = "notes";
   editingNote = false;
   state.collapsed[daily.id] = false;
+  pathOf(daily.id).forEach(folder => { state.collapsed[folder.id] = false; });
   syncEditor(note);
-  touched.forEach(syncEditor);
   render();
-  const count = created ? openTasks.length : added;
   toast(created
-    ? `Opened today with ${count} open ${count === 1 ? "task" : "tasks"}`
+    ? (added ? `Opened today with ${added} open ${added === 1 ? "task" : "tasks"}` : "Opened today")
     : (added ? `Added ${added} open ${added === 1 ? "task" : "tasks"} to today` : "Today is open"));
+}
+// Roll over once per day by itself, as soon as a daily folder is known.
+function autoRollover() {
+  if (!ensureDaily()) return;
+  const date = todayISO();
+  let done = false;
+  try { done = localStorage.getItem(rolledKey(date)) === "1"; } catch (err) { done = false; }
+  const today = state.notes.find(n => n.type === "daily" && n.date === date);
+  if (done && today) return;
+  rollover(true);
 }
 
 function goNote(dir) {
@@ -2188,7 +2295,7 @@ function hideSlip() {
 
 function paletteActions() {
   return [
-    { label: "Open today", hint: "N", run: rollover },
+    { label: "Open today", hint: "N", run: () => rollover() },
     { label: "New note", hint: "Here", run: addNote },
     { label: "New folder", hint: "Vault", run: () => openModal("folder", "New folder", "Name") }
   ];
@@ -2391,7 +2498,7 @@ $("search").addEventListener("input", (e) => {
   renderTree();
   save();
 });
-$("btnToday").addEventListener("click", rollover);
+$("btnToday").addEventListener("click", () => rollover());
 $("btnOpen").addEventListener("click", openFolder);
 $("folderInput").addEventListener("change", (e) => {
   if (e.target.files && e.target.files.length) readDroppedFiles(e.target.files);
@@ -2467,6 +2574,7 @@ $("spread").addEventListener("change", (e) => {
     task.done = md.checked;
     task.status = md.checked ? "done" : "todo";
   }
+  relinkNoteTasks(note);
   render();
 });
 let writeTimer = 0;
@@ -2912,6 +3020,13 @@ storedHandle().then(async (handle) => {
   }
   if ((location.hash || "").replace(/^#/, "") === "rollover") rollover();
 });
+// Fonts and window width change how the title wraps.
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitTitle($("noteTitle")));
+window.addEventListener("resize", () => fitTitle($("noteTitle")));
+// A new day starts while the app is open: carry tasks onto it.
+setInterval(autoRollover, 60 * 1000);
+window.addEventListener("focus", autoRollover);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) autoRollover(); });
 window.addEventListener("hashchange", () => {
   if ((location.hash || "").replace(/^#/, "") === "rollover") rollover();
   else { applyRoute(); render(); }
