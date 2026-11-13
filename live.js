@@ -1,7 +1,7 @@
 // Live preview editor: markdown stays plain text, but marks that the cursor
 // is not on are hidden, so the note reads like the rendered page while you
 // type. Built on CodeMirror 6 from vendor/editor.js (window.CM).
-// The host app passes hooks: onChange(body), openTarget(title), titles().
+// The host app passes hooks: onChange(body), openTarget(title), titles(), tags().
 window.FoliaLive = (() => {
   const CM = window.CM;
   if (!CM) return null;
@@ -14,6 +14,8 @@ window.FoliaLive = (() => {
 
   const WIKI = /\[\[([^\]|#\n]+)(?:#[^\]|\n]*)?(?:\|([^\]\n]+))?\]\]/g;
   const BARE = /https?:\/\/[^\s)<>\]]+/g;
+  // #tag after a space or at the start of a line; "# Title" stays a heading.
+  const TAG = /(^|[\s(])#([A-Za-z][\w/-]*)/g;
 
   class CheckWidget extends WidgetType {
     constructor(done) { super(); this.done = done; }
@@ -40,16 +42,6 @@ window.FoliaLive = (() => {
       dot.className = "cm-bullet";
       dot.setAttribute("aria-hidden", "true");
       return dot;
-    }
-  }
-  class NoteWidget extends WidgetType {
-    constructor(text) { super(); this.text = text; }
-    eq(other) { return other.text === this.text; }
-    toDOM() {
-      const tag = document.createElement("span");
-      tag.className = "cm-carried";
-      tag.textContent = this.text;
-      return tag;
     }
   }
   class RuleWidget extends WidgetType {
@@ -88,6 +80,37 @@ window.FoliaLive = (() => {
     view.dispatch({ changes: { from: ln.from, to: ln.from + lead[0].length, insert } });
     return true;
   }
+
+  // Tab on an empty line (or a bare "- ") starts a task there; on any other
+  // line it indents as before.
+  function tabTask(view) {
+    const sel = view.state.selection;
+    if (sel.ranges.length !== 1 || !sel.main.empty) return indentMore(view);
+    const ln = view.state.doc.lineAt(sel.main.head);
+    const bare = ln.text.match(/^(\s*)(?:[-*+]\s*)?$/);
+    if (!bare) return indentMore(view);
+    const insert = `${bare[1]}- [ ] `;
+    view.dispatch({
+      changes: { from: ln.from, to: ln.to, insert },
+      selection: { anchor: ln.from + insert.length },
+      userEvent: "input"
+    });
+    return true;
+  }
+  // "!!" then a space turns into #important.
+  const bangToImportant = EditorView.inputHandler.of((view, from, to, text) => {
+    if (text !== " " || from !== to) return false;
+    const ln = view.state.doc.lineAt(from);
+    const before = view.state.sliceDoc(ln.from, from);
+    if (!/(^|\s)!!$/.test(before)) return false;
+    const insert = "#important ";
+    view.dispatch({
+      changes: { from: from - 2, to, insert },
+      selection: { anchor: from - 2 + insert.length },
+      userEvent: "input.type"
+    });
+    return true;
+  });
 
   function activeLines(view) {
     const out = new Set();
@@ -171,11 +194,6 @@ window.FoliaLive = (() => {
               const end = marker.to + (doc.sliceString(marker.to, marker.to + 1) === " " ? 1 : 0);
               add(ln.from, ln.from, line(done ? "cm-task cm-task-done" : "cm-task"));
               if (!touches(view, node.from, marker.to)) add(node.from, end, check(done));
-              const carried = !done && hooks.carried && hooks.carried();
-              const title = carried ? doc.sliceString(end, ln.to).trim() : "";
-              if (carried && carried.has(title)) {
-                out.push(Decoration.widget({ widget: new NoteWidget(carried.get(title)), side: 1 }).range(ln.to));
-              }
               return;
             }
             const sign = doc.sliceString(node.from, node.to);
@@ -222,6 +240,19 @@ window.FoliaLive = (() => {
         add(start, labelFrom, hide);
         add(labelFrom, end - 2, mark("wikilink cm-wikilink", { "data-target": target }));
         add(end - 2, end, hide);
+      }
+      TAG.lastIndex = 0;
+      while ((m = TAG.exec(text))) {
+        const start = from + m.index + m[1].length;
+        const end = start + 1 + m[2].length;
+        const tree2 = tree.resolveInner(start, 1);
+        if (/Code|URL|LinkMark/.test(tree2.name)) continue;
+        const important = m[2].toLowerCase() === "important";
+        add(start, end, mark(important ? "cm-tag cm-tag-important" : "cm-tag"));
+        if (important) {
+          const l = doc.lineAt(start);
+          add(l.from, l.from, line("cm-important"));
+        }
       }
     }
     return Decoration.set(out, true);
@@ -274,6 +305,29 @@ window.FoliaLive = (() => {
     };
   }
 
+  // # completes tags used in the vault; "important" is always offered.
+  function tagCompletions(hooks) {
+    return (ctx) => {
+      const before = ctx.matchBefore(/(?:^|[\s(])#[\w/-]*$/);
+      if (!before) return null;
+      const hash = before.text.lastIndexOf("#");
+      const from = before.from + hash + 1;
+      const typed = ctx.state.sliceDoc(from, ctx.pos).toLowerCase();
+      const lineStart = ctx.state.doc.lineAt(ctx.pos).from;
+      if (from - 1 === lineStart && !typed) return null; // "#" at line start is likely a heading
+      const all = ["important", ...((hooks.tags && hooks.tags()) || [])];
+      const seen = new Set();
+      const options = all.filter(tag => {
+        const key = tag.toLowerCase();
+        if (seen.has(key) || key === typed) return false;
+        seen.add(key);
+        return true;
+      }).map(tag => ({ label: tag, displayLabel: `#${tag}`, apply: `${tag} `, type: "keyword" }));
+      if (!options.length) return null;
+      return { from, options, validFor: /^[\w/-]*$/ };
+    };
+  }
+
   function create(parent, body, hooks) {
     const view = new EditorView({
       parent,
@@ -289,16 +343,17 @@ window.FoliaLive = (() => {
           markdown({ base: markdownLanguage, extensions: [GFM], addKeymap: false }),
           syntaxHighlighting(style),
           closeBrackets(),
-          autocompletion({ override: [wikiCompletions(hooks)], icons: false }),
+          autocompletion({ override: [wikiCompletions(hooks), tagCompletions(hooks)], icons: false }),
+          bangToImportant,
           highlightSelectionMatches(),
-          placeholder("Start writing. - [ ] makes a task, [[ links a note."),
+          placeholder("Start writing. Tab on an empty line makes a task, !! marks it important, [[ links a note."),
           EditorView.lineWrapping,
           livePlugin(hooks),
           keymap.of([
             ...completionKeymap,
             { key: "Mod-Enter", run: toggleTaskAtCursor },
             { key: "Mod-l", run: toggleTaskAtCursor },
-            { key: "Tab", run: indentMore, shift: indentLess },
+            { key: "Tab", run: tabTask, shift: indentLess },
             ...closeBracketsKeymap,
             ...markdownKeymap,
             ...searchKeymap,

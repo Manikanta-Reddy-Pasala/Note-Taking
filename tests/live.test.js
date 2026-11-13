@@ -82,13 +82,84 @@ test("Cmd/Ctrl+E switches between edit and reading view", () => run(async ({ pag
   assert.strictEqual(await page.locator(".cm-editor").count(), 1);
 }));
 
-test("Old daily note says where its open tasks went, without changing the file", () => run(async ({ page }) => {
+test("Old daily note has no moved-to labels and is not changed", () => run(async ({ page }) => {
   await settle(page);
   await page.click('[data-day="-1"]');
   await wait(page, 400);
-  const labels = await page.locator(".cm-carried").allInnerTexts();
-  assert.ok(labels.length >= 3 && labels.every(t => /moved to 13 Nov/.test(t)), JSON.stringify(labels));
+  assert.strictEqual(await page.locator(".cm-carried, .carried").count(), 0);
+  assert.doesNotMatch(await page.locator(".cm-content").innerText(), /moved to/);
   assert.strictEqual((await files(page))["Daily/2026-11-12.md"], PREV);
+}));
+
+test("Heading, Enter, Tab makes a checkbox; Enter keeps making tasks", () => run(async ({ page }) => {
+  await settle(page);
+  await page.evaluate(() => { state.selectedFolderId = state.folders.find(f => f.name === "Notes").id; addNote(); });
+  await wait(page);
+  await page.locator(".cm-content").click();
+  await page.keyboard.type("## Important");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Tab");
+  await page.keyboard.type("Call the bank");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("Pay rent");
+  await wait(page);
+  const body = (await files(page))["Notes/Untitled.md"];
+  assert.strictEqual(body, "## Important\n- [ ] Call the bank\n- [ ] Pay rent");
+  // Tab on a line with text still indents
+  await page.keyboard.press("Home");
+  await page.keyboard.press("Tab");
+  await wait(page);
+  assert.match((await files(page))["Notes/Untitled.md"], /\n  - \[ \] Pay rent$/);
+}));
+
+test("!! then space tags a task #important; it shows red in edit, read and Tasks", () => run(async ({ page }) => {
+  await settle(page);
+  await page.locator(".cm-line", { hasText: "A" }).first().click();
+  await page.keyboard.press("End");
+  await page.keyboard.type(" !! ");
+  await wait(page);
+  assert.match((await files(page))["Daily/2026-11-13.md"], /- \[ \] A #important \n/);
+  await page.locator(".cm-line", { hasText: "todo" }).first().click();
+  await settle(page);
+  assert.strictEqual(await page.locator(".cm-line.cm-important .cm-tag-important").count(), 1);
+  await page.click('[data-mode="read"]');
+  await settle(page);
+  assert.strictEqual(await page.locator(".row.important .tag-important").count(), 1);
+  await page.click("#btnTasks");
+  await settle(page);
+  await page.click("#tasksImportant");
+  await settle(page);
+  const rows = await page.locator(".tg-row").allInnerTexts();
+  assert.strictEqual(rows.length, 1, JSON.stringify(rows));
+  assert.match(rows[0], /A\s*#important/);
+  assert.match(rows[0], /since 12 Nov/);
+}));
+
+test("# suggests tags, important first", () => run(async ({ page }) => {
+  await settle(page);
+  await page.locator(".cm-line", { hasText: "D" }).last().click();
+  await page.keyboard.press("End");
+  await page.keyboard.type(" #imp");
+  await page.waitForSelector(".cm-tooltip-autocomplete");
+  await page.clock.setFixedTime(new Date("2026-11-13T06:00:05Z"));
+  await page.keyboard.press("Enter");
+  await wait(page);
+  assert.match((await files(page))["Daily/2026-11-13.md"], /- \[ \] D #important \n/);
+}));
+
+test("A note shows when it was created and last edited", () => run(async ({ page }) => {
+  await settle(page);
+  await page.evaluate(() => openNote(state.notes.find(n => n.title === "Project plan").id));
+  await settle(page);
+  assert.strictEqual(await page.locator("#noteMeta").innerText(), "");
+  await page.locator(".cm-line", { hasText: "Draft the spec" }).click();
+  await page.keyboard.press("End");
+  await page.keyboard.type(" now");
+  await wait(page);
+  assert.match(await page.locator("#noteMeta").innerText(), /^Edited today \d\d:\d\d$/);
+  await page.evaluate(() => { state.selectedFolderId = state.folders.find(f => f.name === "Notes").id; addNote(); });
+  await wait(page);
+  assert.match(await page.locator("#noteMeta").innerText(), /Created today \d\d:\d\d/);
 }));
 
 test("Tasks view lists each carried task once and ticks it in the newest note", () => run(async ({ page }) => {
@@ -96,9 +167,10 @@ test("Tasks view lists each carried task once and ticks it in the newest note", 
   await page.click("#btnTasks");
   await settle(page);
   const rows = await page.locator(".tg-row").allInnerTexts();
-  assert.strictEqual(rows.filter(t => t.trim() === "A").length, 1, JSON.stringify(rows));
+  assert.strictEqual(rows.filter(t => /^A\b/.test(t.trim())).length, 1, JSON.stringify(rows));
   assert.ok(rows.some(t => /Draft the spec/.test(t)));
-  const index = rows.findIndex(t => t.trim() === "A");
+  assert.ok(rows.some(t => /^A\s+since 12 Nov$/.test(t.trim())), JSON.stringify(rows));
+  const index = rows.findIndex(t => /^A\b/.test(t.trim()));
   await page.locator(".tg-row").nth(index).locator("input").click();
   await wait(page);
   const f = await files(page);

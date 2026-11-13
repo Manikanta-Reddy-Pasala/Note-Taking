@@ -5,7 +5,7 @@ const { open, settle } = require("./harness");
   const phone = process.argv[3] === "phone";
   const { browser, page } = await open({
     "Daily/2026-11-11.md": "## todo\n- [x] Book flights\n\n## Tomorrow\n",
-    "Daily/2026-11-12.md": "## todo\n- [ ] Review [[Project plan]] with the team\n- [x] Send invoice to Acme\n- [ ] Fix login bug https://acme.atlassian.net/browse/ONE-412\n  - [ ] Reproduce on staging\n  - [x] Write a failing test\n\nNotes from standup: **ship** the *rollover* fix.\n\n## Tomorrow\n- [ ] Call the bank\n",
+    "Daily/2026-11-12.md": "## todo\n- [ ] Review [[Project plan]] with the team\n- [x] Send invoice to Acme\n- [ ] Fix login bug #important https://acme.atlassian.net/browse/ONE-412\n  - [ ] Reproduce on staging\n  - [x] Write a failing test\n\nNotes from standup: **ship** the *rollover* fix.\n\n## Tomorrow\n- [ ] Call the bank #finance\n",
     "Projects/Project plan.md": "## Goals\n\nShip by **Q4**, see [[2026-11-12]].\n\n> Keep it small.\n\n- Rollover\n- Live preview\n\n- [ ] Draft the spec\n- [x] Pick a name\n\nUse `npm test` before pushing.\n",
     "Notes/Idea.md": "A quick thought.\n"
   }, "2026-11-13T06:00:00Z", { "folia.daily:vault": "vault/Daily", "folia.mode": "live" });
