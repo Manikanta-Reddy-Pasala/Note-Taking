@@ -333,6 +333,24 @@
     .preview .todo .line {
       font-size: 17px;
       line-height: 1.35;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px 10px;
+    }
+    a.ext {
+      color: var(--leaf);
+      text-underline-offset: 3px;
+    }
+    .task-links { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+    .task-links a.ext {
+      font-family: var(--sans);
+      font-size: 12px;
+      text-decoration: none;
+      background: var(--leaf-soft);
+      color: var(--leaf);
+      border-radius: 999px;
+      padding: 1px 8px;
     }
     .preview .todo.nested .row { box-shadow: inset 2px 0 0 var(--line); }
     .preview .check { width: 18px; height: 18px; border-radius: 50%; }
@@ -1214,19 +1232,58 @@ function inline(raw) {
   }).join("");
 }
 function linkify(raw) {
-  const re = /\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g;
+  const re = /\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s)<]+)/g;
   let out = "";
   let last = 0;
   let match;
   while ((match = re.exec(raw))) {
     out += emphasis(raw.slice(last, match.index));
-    const target = match[1].trim();
-    const label = (match[2] || match[1]).trim();
-    const note = findNote(target);
-    out += `<a class="wikilink${note ? "" : " missing"}" href="#" data-target="${escAttr(target)}">${emphasis(label)}</a>`;
+    if (match[1] != null) {
+      const target = match[1].trim();
+      const label = (match[2] || match[1]).trim();
+      const note = findNote(target);
+      out += `<a class="wikilink${note ? "" : " missing"}" href="#" data-target="${escAttr(target)}">${emphasis(label)}</a>`;
+    } else if (match[4]) out += extLink(match[3], match[4]);
+    else out += extLink(match[5], match[5]);
     last = re.lastIndex;
   }
   return out + emphasis(raw.slice(last));
+}
+function hostOf(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ""); }
+  catch (err) { return "Link"; }
+}
+function shortLinkLabel(label, url) {
+  const clean = String(label || "").trim();
+  const ticket = String(url).match(/\/browse\/([A-Z][A-Z0-9]+-\d+)/i);
+  if (/^https?:\/\//i.test(clean) || clean.length > 42) return ticket ? ticket[1] : hostOf(url);
+  return clean;
+}
+function extLink(label, url) {
+  if (!/^https?:\/\//i.test(url)) return emphasis(label);
+  return `<a class="ext" href="${escAttr(url)}" target="_blank" rel="noopener noreferrer">${esc(shortLinkLabel(label, url))}</a>`;
+}
+function presentCheck(title) {
+  const links = [];
+  const name = String(title || "")
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) => {
+      links.push({ label, url });
+      return " ";
+    })
+    .replace(/https?:\/\/[^\s)<]+/g, (url) => {
+      links.push({ label: url, url });
+      return " ";
+    })
+    .replace(/\s*✅\s*\d{4}-\d{2}-\d{2}\s*$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return { name, links };
+}
+function checkBody(title) {
+  const view = presentCheck(title);
+  const chips = view.links.map(link => extLink(link.label, link.url)).join("");
+  if (!view.name) return chips;
+  return `<span class="task-name">${inline(view.name)}</span>${chips ? `<span class="task-links">${chips}</span>` : ""}`;
 }
 function emphasis(raw) {
   let html = esc(raw);
@@ -1397,8 +1454,8 @@ function renderMarkdown(note) {
       html += `<div class="swipe todo ${depth ? "nested" : ""}" data-swipe="${task ? task.id : ""}" data-line="${i}" style="--nest:${depth}">
         <div class="under"><span>${esc(labels.right)}</span><span>${esc(labels.left)}</span></div>
         <div class="row">
-          <input class="check" type="checkbox" ${on ? "checked" : ""} data-md-line="${i}" aria-label="${escAttr(check[3])}" />
-          <span class="line ${on ? "done" : ""}">${inline(check[3])}</span>
+          <input class="check" type="checkbox" ${on ? "checked" : ""} data-md-line="${i}" aria-label="${escAttr(presentCheck(check[3]).name || check[3])}" />
+          <span class="line ${on ? "done" : ""}">${checkBody(check[3])}</span>
         </div>
       </div>`;
       return;
@@ -2556,6 +2613,7 @@ $("spread").addEventListener("dblclick", (e) => {
   });
 });
 $("spread").addEventListener("click", (e) => {
+  if (e.target.closest("a.ext")) return;
   const link = e.target.closest("a.wikilink");
   if (link) {
     e.preventDefault();
