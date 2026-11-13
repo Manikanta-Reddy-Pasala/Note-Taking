@@ -654,9 +654,11 @@
       --shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
       --sans: Inter, ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
       --serif: var(--sans);
+      --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      color-scheme: light;
     }
     @media (prefers-color-scheme: dark) {
-      :root {
+      :root:not([data-theme="light"]) {
         --desk: #262626;
         --page: #1e1e1e;
         --under: #262626;
@@ -671,7 +673,25 @@
         --under-next: #7f6df2;
         --code: #2a2a2a;
         --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        color-scheme: dark;
       }
+    }
+    :root[data-theme="dark"] {
+        --desk: #262626;
+        --page: #1e1e1e;
+        --under: #262626;
+        --ink: #dadada;
+        --mute: #b3b3b3;
+        --faint: #8f8f8f;
+        --line: #363636;
+        --leaf: #a88bfa;
+        --leaf-soft: rgba(138, 92, 245, 0.2);
+        --hover: #303030;
+        --under-done: #3f3f3f;
+        --under-next: #7f6df2;
+        --code: #2a2a2a;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      color-scheme: dark;
     }
     body { font-size: 14px; background: var(--page); }
     .rail { background: var(--desk); border-right: 1px solid var(--line); }
@@ -755,6 +775,129 @@
     .slip strong, .modal h3 { font-family: var(--sans); font-weight: 600; font-size: 16px; }
     .slip p { font-family: var(--sans); font-size: 13px; }
     .toast { border-radius: 6px; }
+
+    /* Layout additions */
+    body.rail-hidden .rail { display: none; }
+    .main { min-width: 0; }
+    .topbar { gap: 8px; }
+    .top-actions .text-btn.on { background: var(--leaf-soft); color: var(--leaf); }
+    #taskCount:not(:empty) {
+      display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 2px; border-radius: 999px;
+      background: var(--leaf-soft); color: var(--leaf); font-size: 11px; line-height: 17px; text-align: center;
+    }
+    .side-foot { align-items: center; }
+    .theme-btn { flex: none; }
+    .banner[hidden], .cal[hidden] { display: none; }
+    .banner {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+      padding: 8px 16px; background: var(--leaf-soft); border-bottom: 1px solid var(--line); font-size: 13px;
+    }
+    .banner .hint { margin: 0; }
+    .text-btn.primary { background: var(--leaf); color: #fff; }
+    .text-btn.primary:hover { color: #fff; }
+    .text-btn[disabled] { opacity: 0.45; cursor: default; filter: none; }
+    .status {
+      display: flex; justify-content: space-between; gap: 12px; padding: 3px 14px;
+      border-top: 1px solid var(--line); background: var(--desk); color: var(--faint); font-size: 12px; min-height: 24px;
+    }
+    .status span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    /* Calendar */
+    .cal { margin: 0 10px 10px; }
+    .cal-head { display: flex; align-items: center; gap: 2px; margin-bottom: 4px; }
+    .cal-title { flex: 1; text-align: left; border: 0; background: none; font-weight: 600; font-size: 13px; padding: 2px 4px; border-radius: 4px; }
+    .cal-title:hover { background: var(--hover); }
+    .cal-head .icon-btn { width: 22px; height: 22px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; text-align: center; }
+    .cal-dow { font-size: 10px; color: var(--faint); padding: 2px 0; }
+    .cal-day {
+      position: relative; border: 0; background: none; border-radius: 4px; font-size: 12px; padding: 4px 0 6px;
+      color: var(--mute); font-variant-numeric: tabular-nums;
+    }
+    .cal-day:hover { background: var(--hover); color: var(--ink); }
+    .cal-day.has { color: var(--ink); }
+    .cal-day.today { color: var(--leaf); font-weight: 700; }
+    .cal-day.on { background: var(--leaf-soft); color: var(--ink); }
+    .cal-day i {
+      position: absolute; left: 50%; bottom: 2px; width: 3px; height: 3px; margin-left: -1.5px; border-radius: 50%; background: var(--faint);
+    }
+    .cal-day i.open { background: var(--leaf); }
+    /* Note header */
+    .day-nav { display: flex; align-items: center; gap: 2px; }
+    .day-nav .icon-btn { font-size: 18px; }
+    .mode { display: inline-flex; background: var(--hover); border-radius: 6px; padding: 2px; gap: 2px; }
+    .mode button { border: 0; background: none; border-radius: 4px; padding: 3px 10px; font-size: 12px; font-weight: 600; color: var(--mute); }
+    .mode button[aria-pressed="true"] { background: var(--page); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+    .ed-title[readonly] { cursor: default; }
+    .carried, .cm-carried {
+      margin-left: 8px; font-size: 12px; color: var(--faint); font-style: normal; text-decoration: none;
+      white-space: nowrap; display: inline-block;
+    }
+    .carried::before, .cm-carried::before { content: "→ "; }
+    /* Live preview editor */
+    .live-host { min-height: 50vh; }
+    .live-host .cm-editor { background: transparent; color: var(--ink); font-size: 16px; }
+    .live-host .cm-editor.cm-focused { outline: none; }
+    .live-host .cm-scroller { font-family: var(--sans); line-height: 1.6; overflow: visible; }
+    .live-host .cm-content { padding: 2px 0 30vh; caret-color: var(--ink); }
+    .live-host .cm-line { padding: 1px 2px; }
+    .live-host .cm-cursor { border-left: 2px solid var(--leaf); }
+    .live-host .cm-selectionBackground, .live-host .cm-focused .cm-selectionBackground,
+    .live-host .cm-content ::selection { background: var(--leaf-soft) !important; }
+    .live-host .cm-placeholder { color: var(--faint); }
+    .live-host .cm-h { font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
+    .live-host .cm-h1 { font-size: 26px; padding-top: 14px; }
+    .live-host .cm-h2 { font-size: 21px; padding-top: 12px; }
+    .live-host .cm-h3 { font-size: 18px; padding-top: 8px; }
+    .live-host .cm-h4, .live-host .cm-h5, .live-host .cm-h6 { font-size: 16px; padding-top: 6px; }
+    .live-host .cm-task-done { color: var(--faint); }
+    .live-host .cm-task-done { text-decoration: line-through; text-decoration-color: var(--faint); }
+    .live-host .cm-task .cm-lead { display: inline-block; white-space: pre; }
+    .live-host .cm-check { display: inline-grid; vertical-align: -2px; margin: 0 9px 0 0; }
+    .live-host .cm-bullet {
+      display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--faint); vertical-align: 3px; margin: 0 10px 0 5px;
+    }
+    .live-host .cm-lead { letter-spacing: 8px; }
+    .live-host .cm-quote { border-left: 3px solid var(--leaf); padding-left: 14px; color: var(--mute); }
+    .live-host .cm-codeblock { font-family: var(--mono); font-size: 13.5px; background: var(--code); padding-left: 10px; }
+    .live-host .cm-code { font-family: var(--mono); font-size: 0.88em; background: var(--code); border-radius: 3px; padding: 1px 3px; }
+    .live-host .cm-wikilink { color: var(--leaf); cursor: pointer; }
+    .live-host .cm-wikilink:hover { text-decoration: underline; }
+    .live-host .cm-wikilink-raw { color: var(--leaf); }
+    .live-host .cm-link { color: var(--leaf); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+    .live-host .cm-url { color: var(--leaf); }
+    .live-host .cm-rule { display: inline-block; width: 100%; border-top: 1px solid var(--line); vertical-align: middle; }
+    .live-host .cm-searchMatch { background: rgba(255, 208, 0, 0.3); }
+    .live-host .cm-selectionMatch { background: var(--leaf-soft); }
+    .cm-tooltip { background: var(--page); border: 1px solid var(--line) !important; border-radius: 6px; box-shadow: var(--shadow); color: var(--ink); }
+    .cm-tooltip-autocomplete > ul { font-family: var(--sans) !important; font-size: 14px; max-height: 260px !important; }
+    .cm-tooltip-autocomplete > ul > li { padding: 4px 10px !important; }
+    .cm-tooltip-autocomplete > ul > li[aria-selected] { background: var(--leaf-soft) !important; color: var(--ink) !important; }
+    .cm-panels { background: var(--desk) !important; color: var(--ink) !important; border-color: var(--line) !important; }
+    .cm-panel.cm-search input, .cm-panel.cm-search button { font-size: 12px; }
+    /* Vault task list */
+    .page-title { font-size: 30px; font-weight: 700; letter-spacing: -0.015em; margin: 10px 0 12px; }
+    .tasks-tools { display: flex; align-items: center; gap: 14px; padding-bottom: 10px; }
+    .tasks-tools input[type="search"] {
+      flex: 1; border: 1px solid var(--line); border-radius: 4px; background: var(--page); padding: 6px 8px; font-size: 14px; outline: none;
+    }
+    .tasks-tools input[type="search"]:focus { border-color: var(--leaf); }
+    .toggle { display: inline-flex; align-items: center; gap: 6px; color: var(--mute); font-size: 13px; white-space: nowrap; }
+    .tg { margin: 14px 0 6px; }
+    .tg h3 { display: flex; align-items: baseline; gap: 10px; margin: 0 0 4px; font-size: 15px; }
+    .tg h3 small { color: var(--faint); font-weight: 400; font-size: 12px; }
+    .tg-title { border: 0; background: none; padding: 0; font-weight: 700; font-size: 15px; color: var(--ink); }
+    .tg-title:hover { color: var(--leaf); text-decoration: underline; }
+    .tg-row {
+      --nest: 0; display: flex; align-items: flex-start; gap: 10px; padding: 3px 6px; border-radius: 4px;
+      margin-left: calc(var(--nest) * 24px); font-size: 15px;
+    }
+    .tg-row:hover { background: var(--hover); }
+    .tg-row .line { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+    @media (max-width: 680px) {
+      .status { display: none; }
+      .top-actions .text-btn { padding: 6px 8px; }
+      .tasks-tools { flex-wrap: wrap; }
+    }
     @media (max-width: 980px) {
       .rail { width: 208px; min-width: 208px; }
       .prose { padding: 8px 28px 40px; }
@@ -772,6 +915,15 @@
       .peek-tab { writing-mode: horizontal-tb; transform: none; width: 100%; text-align: left; padding: 12px 14px; }
       .board { grid-template-columns: 1fr; }
       .ed-title { font-size: 28px; }
+    }
+    @media (max-width: 680px) {
+      .rail { display: none; max-height: none; }
+      body.rail-open .rail { display: flex; max-height: 75vh; overflow: auto; }
+      body.rail-open .rail .tree { overflow: visible; flex: none; }
+      .edge { width: 12px; }
+      .edge span { display: none; }
+      .prose { padding: 8px 18px 40px; }
+      .ed-bar { flex-wrap: wrap; row-gap: 6px; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -808,6 +960,7 @@
       </svg>
       <input id="search" type="search" placeholder="Search" autocomplete="off" />
     </label>
+    <section class="cal" id="cal" aria-label="Calendar"></section>
     <div class="tree-label">
       Vault
       <button class="icon-btn" id="btnAddFolder" type="button" aria-label="New folder">+</button>
@@ -818,21 +971,28 @@
         <div id="footMeta">No folder open</div>
         <div class="hint">Right-click a folder to mark it as the daily folder.</div>
       </div>
+      <button class="icon-btn theme-btn" id="btnTheme" type="button" aria-label="Theme" title="Theme"></button>
     </div>
   </aside>
 
   <main class="main">
     <header class="topbar">
+      <button class="icon-btn" id="btnRail" type="button" aria-label="Toggle sidebar" title="Toggle sidebar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M6 2.5v11" stroke="currentColor" stroke-width="1.3"/></svg>
+      </button>
       <div class="path" id="crumb"></div>
       <div class="top-actions">
+        <button class="text-btn" id="btnTasks" type="button" title="Open tasks across the vault">Tasks <span id="taskCount"></span></button>
         <button class="text-btn" id="btnJump" type="button">Jump <kbd id="jumpKbd">⌘K</kbd></button>
         <button class="text-btn" id="btnAddNote" type="button">New note</button>
       </div>
     </header>
+    <div class="banner" id="banner" hidden></div>
     <div class="spread" id="spread">
       <div class="book" id="book"></div>
       <aside class="peek" id="peek"></aside>
     </div>
+    <footer class="status" id="status" aria-live="polite"></footer>
   </main>
 
   <div class="menu" id="folderMenu" hidden>
@@ -866,6 +1026,8 @@
     </div>
   </div>
 
+<script src="vendor/editor.js"></script>
+<script src="live.js"></script>
 <script>
 const KEY = "folia.vault.v2";
 const TZ = "Asia/Dubai";
@@ -918,8 +1080,7 @@ const written = new Map();
 let rootHandle = null;
 
 function headingOrName(body, base) {
-  const heading = String(body || "").match(/^#\s+(.+)$/m);
-  return heading ? heading[1].trim() : base;
+  return base;
 }
 function tasksFromNote(note) {
   const stack = [];
@@ -1050,9 +1211,14 @@ async function persistNote(note) {
     await persistNote(note);
   }
 }
+let pendingWrites = 0;
 function writeNote(note) {
   if (!note || !fileHandles.get(note.id)) return;
-  const run = (writeChain.get(note.id) || Promise.resolve()).then(() => persistNote(note));
+  if (written.get(note.id) === note.body) return;
+  pendingWrites += 1;
+  const run = (writeChain.get(note.id) || Promise.resolve())
+    .then(() => persistNote(note))
+    .finally(() => { pendingWrites -= 1; renderStatus(); });
   writeChain.set(note.id, run.catch(() => {}));
 }
 async function walkDir(dir, parentId, folders, notes) {
@@ -1084,7 +1250,7 @@ async function openRoot(handle) {
   await walkDir(handle, rootId, folders, notes);
   adoptVault(handle.name, folders, notes);
   rememberHandle(handle);
-  editingNote = false;
+  editingNote = liveDefault;
   lastRenderedNote = null;
   render();
   toast(notes.length ? `Opened ${notes.length} notes` : "That folder has no markdown files");
@@ -1150,7 +1316,7 @@ async function readDroppedFiles(fileList) {
   const top = (fileList[0] && fileList[0].webkitRelativePath || "").split("/")[0];
   entries.name = top;
   buildFromList(entries);
-  editingNote = false;
+  editingNote = liveDefault;
   lastRenderedNote = null;
   render();
   toast(entries.length ? `Opened ${entries.length} notes. This browser will not save edits back to the files.` : "That folder has no markdown files");
@@ -1188,7 +1354,7 @@ function save() { /* notes live in the opened folder */ }
 
 let state = load();
 let modalMode = null;
-let editingNote = false;
+let editingNote = true;
 let toastTimer = 0;
 let undoFn = null;
 let gesture = null;
@@ -1208,9 +1374,18 @@ let lastRenderedFolder = null;
 function flushEditor() {
   const title = $("noteTitle");
   const body = $("noteBody");
-  const id = (title && title.dataset.forNote) || (body && body.dataset.forNote);
+  const live = liveView && liveView.dom.isConnected ? liveNoteId : null;
+  const id = (title && title.dataset.forNote) || (body && body.dataset.forNote) || live;
   const note = id ? state.notes.find(item => item.id === id) : null;
   if (!note) return null;
+  if (live === note.id) {
+    const text = liveView.state.doc.toString();
+    if (text !== note.body) {
+      note.body = text;
+      clearTimeout(liveTimer);
+      relinkNoteTasks(note);
+    }
+  }
   if (title && title.dataset.forNote === note.id && !fileHandles.has(note.id)) {
     note.title = title.value.replace(/\n/g, " ").trim() || note.title;
   }
@@ -1226,11 +1401,115 @@ function syncEditor(note) {
     fitTitle(title);
   }
   if (body && body.dataset.forNote === note.id && body.value !== note.body) body.value = note.body;
+  if (liveView && liveNoteId === note.id) FoliaLive.replaceDoc(liveView, note.body);
 }
 function fitTitle(el) {
   if (!el) return;
   el.style.height = "auto";
   el.style.height = `${el.scrollHeight}px`;
+}
+
+// ---- Live preview editor (live.js). Reading view keeps swipes and chips.
+let liveView = null;
+let liveNoteId = null;
+let liveTimer = 0;
+let carriedCache = new Map();
+function readPref(key, fallback) {
+  try { const v = localStorage.getItem(key); return v == null ? fallback : v; } catch (err) { return fallback; }
+}
+function writePref(key, value) {
+  try { localStorage.setItem(key, value); } catch (err) { /* only a preference */ }
+}
+let liveDefault = readPref("folia.mode", "live") !== "read";
+editingNote = liveDefault;
+function setMode(live) {
+  flushEditor();
+  editingNote = live;
+  liveDefault = live;
+  writePref("folia.mode", live ? "live" : "read");
+  render();
+  if (live && liveView) liveView.focus();
+}
+function linkTitles() {
+  const seen = new Set();
+  return state.notes.map(note => note.date || note.title).filter(title => {
+    const key = title.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+function openTarget(target) {
+  const note = findNote(target);
+  if (note) openNote(note.id);
+  else createLinked(target);
+}
+// Open tasks in a daily note that also show up in a later daily note:
+// title -> "moved 13 Nov" or "done 13 Nov". Earlier notes are not edited,
+// so this is how they say where a task went.
+function carriedFromNote(note) {
+  const out = new Map();
+  if (!note || note.type !== "daily" || !note.date) return out;
+  const later = state.notes
+    .filter(n => n.type === "daily" && n.date && n.date > note.date)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  if (!later.length) return out;
+  parseChecks(note.body).forEach(check => {
+    if (check.done) return;
+    const title = check.title.trim();
+    for (const next of later) {
+      const hit = parseChecks(next.body).find(item => item.title.trim() === title);
+      if (hit) {
+        out.set(title, `${hit.done ? "done" : "moved to"} ${shortDate(next.date)}`);
+        return;
+      }
+    }
+  });
+  return out;
+}
+function liveHooks(noteId) {
+  return {
+    titles: linkTitles,
+    openTarget,
+    carried: () => carriedCache,
+    onChange: (body, update) => {
+      const note = state.notes.find(n => n.id === noteId);
+      if (!note || update.transactions.every(tr => tr.isUserEvent("sync"))) return;
+      note.body = body;
+      clearTimeout(liveTimer);
+      liveTimer = setTimeout(() => {
+        relinkNoteTasks(note);
+        writeNote(note);
+        renderPeek();
+        renderStatus();
+        renderCalendar();
+        renderTaskCount();
+      }, 350);
+      renderStatus("Saving…");
+    }
+  };
+}
+function mountLive(host, note) {
+  if (!window.FoliaLive || !host) return;
+  carriedCache = carriedFromNote(note);
+  if (liveView && liveNoteId === note.id) {
+    host.appendChild(liveView.dom);
+    FoliaLive.replaceDoc(liveView, note.body);
+    liveView.requestMeasure();
+    return;
+  }
+  dropLive();
+  liveNoteId = note.id;
+  liveView = FoliaLive.create(host, note.body, liveHooks(note.id));
+}
+function dropLive() {
+  if (!liveView) return;
+  clearTimeout(liveTimer);
+  const note = state.notes.find(n => n.id === liveNoteId);
+  if (note && liveView.dom.isConnected) note.body = liveView.state.doc.toString();
+  liveView.destroy();
+  liveView = null;
+  liveNoteId = null;
 }
 function toast(msg, onUndo) {
   $("toastMsg").textContent = msg;
@@ -1482,6 +1761,13 @@ function renderMain() {
   }
   const path = pathOf(folder.id);
   $("crumb").innerHTML = path.map((p, i) => i === path.length - 1 ? `<b>${esc(p.name)}</b>` : esc(p.name)).join(" / ");
+  if (state.view === "tasks") {
+    $("crumb").innerHTML = "<b>Open tasks</b>";
+    dropLive();
+    renderAllTasks();
+    document.title = "Open tasks — Folia";
+    return;
+  }
   state.view = "notes";
   renderNotes(folder);
   const note = currentNote();
@@ -1564,6 +1850,7 @@ function mentionedIn(note) {
 }
 function renderMarkdown(note) {
   const lines = note.body.split("\n");
+  const carried = carriedFromNote(note);
   let html = "";
   lines.forEach((line, i) => {
     const check = line.match(/^(\s*)- \[([ xX])\]\s?(.*)$/);
@@ -1578,7 +1865,7 @@ function renderMarkdown(note) {
         <div class="under"><span>${esc(labels.right)}</span><span>${esc(labels.left)}</span></div>
         <div class="row">
           <input class="check" type="checkbox" ${on ? "checked" : ""} data-md-line="${i}" aria-label="${escAttr(presentCheck(check[3]).name || check[3])}" />
-          <span class="line ${on ? "done" : ""}">${checkBody(check[3])}</span>
+          <span class="line ${on ? "done" : ""}">${checkBody(check[3])}${!on && carried.has(check[3].trim()) ? `<span class="carried">${esc(carried.get(check[3].trim()))}</span>` : ""}</span>
         </div>
       </div>`;
       return;
@@ -1617,9 +1904,23 @@ function renderNotes(folder) {
   state.selectedNoteId = note.id;
   const prev = neighbor(-1);
   const next = neighbor(1);
-  const body = editingNote
-    ? `<textarea class="ed-body" id="noteBody" data-for-note="${note.id}" spellcheck="true">${esc(note.body)}</textarea>`
-    : `<div class="preview" id="notePreview">${renderMarkdown(note)}${mentionsHtml(note)}</div>`;
+  const live = editingNote && window.FoliaLive;
+  if (!editingNote) dropLive();
+  const body = live
+    ? `<div class="live-host" id="liveHost"></div>${mentionsHtml(note)}`
+    : editingNote
+      ? `<textarea class="ed-body" id="noteBody" data-for-note="${note.id}" spellcheck="true">${esc(note.body)}</textarea>`
+      : `<div class="preview" id="notePreview">${renderMarkdown(note)}${mentionsHtml(note)}</div>`;
+  const isDaily = note.type === "daily" && note.date;
+  const dayNav = isDaily ? `<div class="day-nav" role="group" aria-label="Days">
+      <button class="icon-btn" type="button" data-day="-1" aria-label="Earlier day" title="Earlier day ([)">‹</button>
+      <button class="text-btn" type="button" data-day="0" ${note.date === todayISO() ? "disabled" : ""}>Today</button>
+      <button class="icon-btn" type="button" data-day="1" aria-label="Later day" title="Later day (])">›</button>
+    </div>` : "";
+  const mode = `<div class="mode" role="group" aria-label="View">
+      <button type="button" data-mode="live" aria-pressed="${editingNote ? "true" : "false"}" title="Edit with live preview (${metaKey}E)">Edit</button>
+      <button type="button" data-mode="read" aria-pressed="${editingNote ? "false" : "true"}" title="Reading view (${metaKey}E)">Read</button>
+    </div>`;
   $("book").innerHTML = `<article class="sheet">
     ${prev ? `<div class="edge edge-prev" data-turn="-1"><span>${esc(noteLabel(prev))}</span></div>` : ""}
     ${next ? `<div class="edge edge-next" data-turn="1"><span>${esc(noteLabel(next))}</span></div>` : ""}
@@ -1627,17 +1928,20 @@ function renderNotes(folder) {
       <div class="prose">
         <div class="sheet-head">
           <div class="ed-bar">
-            <button class="text-btn" id="btnEditNote" type="button">${editingNote ? "Preview" : "Edit"}</button>
-            ${editingNote ? `<span class="hint">Enter adds a checkbox. Tab nests it.</span>` : ""}
+            ${dayNav}
             <span class="spacer"></span>
-            <button class="icon-btn" type="button" data-del-note="${note.id}" aria-label="Delete note">×</button>
+            ${mode}
+            <button class="icon-btn" type="button" data-del-note="${note.id}" aria-label="Delete note" title="Delete note">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.5 4h9M5.5 4V2.6h3V4M3.6 4l.6 7.6h5.6l.6-7.6" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            </button>
           </div>
-          <textarea class="ed-title" id="noteTitle" data-for-note="${note.id}" rows="1" aria-label="Note title">${esc(note.title)}</textarea>
+          <textarea class="ed-title" id="noteTitle" data-for-note="${note.id}" rows="1" aria-label="Note title" ${isDaily ? "readonly" : ""}>${esc(note.title)}</textarea>
         </div>
         ${body}
       </div>
     </div>
   </article>`;
+  if (live) mountLive($("liveHost"), note);
 }
 
 function renderPeek() {
@@ -1666,6 +1970,7 @@ function renderPeek() {
 }
 
 function render() {
+  const hadFocus = !!(liveView && liveView.hasFocus);
   flushEditor();
   suppressFocusSave = true;
   const treeScroll = $("tree").scrollTop;
@@ -1687,18 +1992,24 @@ function render() {
   $("footMeta").textContent = !state.folderName
     ? "No folder open"
     : (daily ? `${state.folderName} · daily is ${daily.name}` : state.folderName);
+  renderCalendar();
+  renderBanner();
+  renderTaskCount();
+  renderStatus();
   save();
   suppressFocusSave = false;
   state.notes.forEach(note => writeNote(note));
+  if (hadFocus && liveView && liveView.dom.isConnected) liveView.focus();
 }
 
 function openNote(id) {
   const note = state.notes.find(n => n.id === id);
   if (!note) return;
+  document.body.classList.remove("rail-open");
   state.selectedFolderId = note.folderId;
   state.selectedNoteId = note.id;
   state.view = "notes";
-  editingNote = false;
+  editingNote = liveDefault;
   pathOf(note.folderId).forEach(folder => { state.collapsed[folder.id] = false; });
   closePalette();
   render();
@@ -2169,7 +2480,7 @@ function rollover(quiet) {
     return;
   }
   const prev = state.notes
-    .filter(n => n.type === "daily" && n.folderId === daily.id && n.date && n.date < date)
+    .filter(n => n.type === "daily" && n.folderId === daily.id && n.date && n.date < date && parseChecks(n.body).length)
     .sort((a, b) => b.date.localeCompare(a.date))[0] || null;
   const items = prev ? carriedFrom(prev, date) : [];
   let note = state.notes.find(n => n.type === "daily" && n.date === date && n.folderId === daily.id)
@@ -2214,9 +2525,10 @@ function rollover(quiet) {
   state.selectedFolderId = daily.id;
   state.selectedNoteId = note.id;
   state.view = "notes";
-  editingNote = false;
+  editingNote = liveDefault;
   state.collapsed[daily.id] = false;
   pathOf(daily.id).forEach(folder => { state.collapsed[folder.id] = false; });
+  document.body.classList.remove("rail-open");
   syncEditor(note);
   render();
   toast(created
@@ -2234,6 +2546,244 @@ function autoRollover() {
   rollover(true);
 }
 
+// ---- Status bar, calendar, daily-folder banner, vault task list, rename.
+function renderStatus(forced) {
+  const el = $("status");
+  if (!el) return;
+  const note = state.view === "notes" ? currentNote() : null;
+  let saved = "";
+  if (state.folderName) {
+    saved = !rootHandle
+      ? "Read-only copy: this browser cannot save to the files"
+      : (forced || (pendingWrites ? "Saving…" : "All changes saved"));
+  }
+  let right = "";
+  if (note) {
+    const checks = parseChecks(note.body);
+    const done = checks.filter(c => c.done).length;
+    const words = (note.body.replace(/^\s*- \[[ xX]\]/gm, " ").replace(/[#>*_`[\]()|-]/g, " ").match(/\S+/g) || []).length;
+    right = `${checks.length ? `${checks.length - done} open · ${done} done · ` : ""}${words} ${words === 1 ? "word" : "words"}`;
+  }
+  el.innerHTML = `<span>${esc(saved)}</span><span>${esc(right)}</span>`;
+}
+let calMonth = null;
+function renderCalendar() {
+  const el = $("cal");
+  if (!el) return;
+  const daily = ensureDaily();
+  if (!daily) { el.hidden = true; el.innerHTML = ""; return; }
+  el.hidden = false;
+  const today = todayISO();
+  const current = state.view === "notes" ? currentNote() : null;
+  const focus = calMonth || (current && current.date ? current.date.slice(0, 7) : today.slice(0, 7));
+  const [y, m] = focus.split("-").map(Number);
+  const first = new Date(Date.UTC(y, m - 1, 1, 12));
+  const pad = (first.getUTCDay() + 6) % 7;
+  const days = new Date(Date.UTC(y, m, 0, 12)).getUTCDate();
+  const byDate = new Map(state.notes.filter(n => n.type === "daily" && n.date).map(n => [n.date, n]));
+  let cells = "";
+  for (let i = 0; i < pad; i++) cells += `<span></span>`;
+  for (let d = 1; d <= days; d++) {
+    const iso = `${focus}-${String(d).padStart(2, "0")}`;
+    const note = byDate.get(iso);
+    const open = note ? parseChecks(note.body).filter(c => !c.done).length : 0;
+    const cls = ["cal-day", iso === today ? "today" : "", current && current.date === iso ? "on" : "", note ? "has" : ""].join(" ").trim();
+    const label = `${formatHuman(iso)}${note ? (open ? `, ${open} open` : ", note") : ""}`;
+    cells += `<button type="button" class="${cls}" data-cal-date="${iso}" aria-label="${escAttr(label)}" title="${escAttr(label)}">${d}${note ? `<i class="${open ? "open" : ""}"></i>` : ""}</button>`;
+  }
+  const title = first.toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
+  el.innerHTML = `<div class="cal-head">
+      <button class="cal-title" type="button" data-cal-step="0" title="Back to this month">${esc(title)}</button>
+      <button class="icon-btn" type="button" data-cal-step="-1" aria-label="Previous month">‹</button>
+      <button class="icon-btn" type="button" data-cal-step="1" aria-label="Next month">›</button>
+    </div>
+    <div class="cal-grid">${["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map(d => `<span class="cal-dow">${d}</span>`).join("")}${cells}</div>`;
+}
+function stepMonth(step) {
+  if (!step) { calMonth = null; renderCalendar(); return; }
+  const current = currentNote();
+  const base = calMonth || (current && current.date ? current.date.slice(0, 7) : todayISO().slice(0, 7));
+  const [y, m] = base.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + step, 1, 12));
+  calMonth = d.toISOString().slice(0, 7);
+  renderCalendar();
+}
+function openDate(iso) {
+  const daily = ensureDaily();
+  if (!daily) return;
+  calMonth = null;
+  if (iso === todayISO()) { rollover(); return; }
+  const note = state.notes.find(n => n.type === "daily" && n.date === iso);
+  if (note) { openNote(note.id); return; }
+  const fresh = {
+    id: uid(), folderId: daily.id, type: "daily", date: iso,
+    title: formatHuman(iso), body: "## todo\n\n## Tomorrow\n", fileName: `${iso}.md`
+  };
+  state.notes.push(fresh);
+  attachNewFile(fresh);
+  openNote(fresh.id);
+  toast(`Started ${formatHuman(iso)}`);
+}
+function stepDay(dir) {
+  if (!dir) { rollover(); return; }
+  goNote(dir);
+}
+const narrow = () => window.matchMedia("(max-width: 680px)").matches;
+function toggleRail(force) {
+  if (narrow()) {
+    document.body.classList.toggle("rail-open", typeof force === "boolean" ? force : undefined);
+    return;
+  }
+  const hidden = typeof force === "boolean" ? force : !document.body.classList.contains("rail-hidden");
+  document.body.classList.toggle("rail-hidden", hidden);
+  writePref("folia.rail", hidden ? "hidden" : "shown");
+}
+function renderBanner() {
+  const el = $("banner");
+  if (!el) return;
+  if (!state.folderName || ensureDaily()) { el.hidden = true; el.innerHTML = ""; return; }
+  const ranked = state.folders
+    .map(folder => ({ folder, n: state.notes.filter(note => note.folderId === folder.id && note.date).length }))
+    .filter(row => row.n)
+    .sort((a, b) => b.n - a.n);
+  const pick = ranked[0];
+  const canMake = rootHandle && !state.folders.some(folder => folder.name.toLowerCase() === "daily");
+  el.hidden = false;
+  el.innerHTML = `<span>Pick the folder for daily notes. Today's note and rollover need one.</span>
+    ${pick ? `<button class="text-btn primary" type="button" data-use-daily="${pick.folder.id}">Use ${esc(pick.folder.name)} · ${pick.n} daily ${pick.n === 1 ? "note" : "notes"}</button>` : ""}
+    ${canMake ? `<button class="text-btn ${pick ? "" : "primary"}" type="button" data-make-daily>Create a Daily folder</button>` : ""}
+    <span class="hint">You can also right-click any folder.</span>`;
+}
+async function makeDailyFolder() {
+  if (!rootHandle) return;
+  const root = state.folders.find(folder => !folder.parentId && dirHandles.get(folder.id) === rootHandle);
+  try {
+    const handle = await rootHandle.getDirectoryHandle("Daily", { create: true });
+    const id = uid();
+    dirHandles.set(id, handle);
+    state.folders.push({ id, name: "Daily", parentId: root ? root.id : null });
+    markDaily(id);
+  } catch (err) {
+    toast("Could not create the folder");
+  }
+}
+
+let tasksFilter = "";
+let tasksShowDone = false;
+// Every task in the vault. A task carried across daily notes is listed once,
+// from the newest daily note that has it.
+function vaultTasks() {
+  const daily = state.notes.filter(n => n.type === "daily" && n.date).sort((a, b) => b.date.localeCompare(a.date));
+  const other = state.notes.filter(n => !(n.type === "daily" && n.date)).sort((a, b) => a.title.localeCompare(b.title));
+  const seen = new Set();
+  const groups = daily.map(note => ({
+    note,
+    rows: parseChecks(note.body).filter(check => {
+      const key = check.title.trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+  }));
+  other.forEach(note => groups.push({ note, rows: parseChecks(note.body) }));
+  return groups;
+}
+function renderTaskCount() {
+  const el = $("taskCount");
+  if (!el) return;
+  const open = vaultTasks().reduce((sum, group) => sum + group.rows.filter(row => !row.done).length, 0);
+  el.textContent = open ? String(open) : "";
+  $("btnTasks").classList.toggle("on", state.view === "tasks");
+}
+function renderAllTasks() {
+  const q = tasksFilter.trim().toLowerCase();
+  const groups = vaultTasks()
+    .map(group => ({ note: group.note, rows: group.rows.filter(row => (tasksShowDone || !row.done) && (!q || row.title.toLowerCase().includes(q))) }))
+    .filter(group => group.rows.length);
+  const today = todayISO();
+  const html = groups.map(group => {
+    const note = group.note;
+    const head = note.date ? (note.date === today ? `Today · ${formatHuman(note.date)}` : formatHuman(note.date)) : note.title;
+    return `<section class="tg">
+      <h3><button class="tg-title" type="button" data-open-note="${note.id}">${esc(head)}</button><small>${esc(pathOf(note.folderId).map(f => f.name).join(" / "))}</small></h3>
+      ${group.rows.map(row => `<div class="tg-row" style="--nest:${row.depth}">
+        <input class="check" type="checkbox" ${row.done ? "checked" : ""} data-all-note="${note.id}" data-all-line="${row.line}" aria-label="${escAttr(presentCheck(row.title).name || row.title)}" />
+        <span class="line ${row.done ? "done" : ""}">${checkBody(row.title)}</span>
+      </div>`).join("")}
+    </section>`;
+  }).join("");
+  $("book").innerHTML = `<article class="sheet"><div class="sheet-inner"><div class="prose tasks-page">
+    <div class="sheet-head">
+      <div class="ed-bar"><button class="text-btn" type="button" data-back>‹ Notes</button><span class="spacer"></span></div>
+      <h1 class="page-title">Open tasks</h1>
+      <div class="tasks-tools">
+        <input id="tasksFilter" type="search" placeholder="Filter tasks" value="${escAttr(tasksFilter)}" autocomplete="off" aria-label="Filter tasks" />
+        <label class="toggle"><input type="checkbox" id="tasksDone" ${tasksShowDone ? "checked" : ""} /> Show done</label>
+      </div>
+    </div>
+    ${html || `<div class="empty">${q ? "No tasks match that filter." : "Nothing open. Every task is done."}</div>`}
+  </div></div></article>`;
+}
+function showTasksView(on) {
+  flushEditor();
+  document.body.classList.remove("rail-open");
+  state.view = on ? "tasks" : "notes";
+  render();
+}
+function toggleLine(note, line, done) {
+  const lines = note.body.split("\n");
+  if (!checkboxAt(lines[line])) return;
+  lines[line] = lines[line].replace(/- \[[ xX]\]/, done ? "- [x]" : "- [ ]");
+  note.body = lines.join("\n");
+  relinkNoteTasks(note);
+  syncEditor(note);
+  writeNote(note);
+}
+// Rename the file behind a note and fix [[links]] to it in other notes.
+async function renameNote(note, next) {
+  const name = next.replace(/[\\/:*?"<>|#^[\]]/g, "-").replace(/\s+/g, " ").trim();
+  if (!name || name === note.title) { syncEditor(note); return; }
+  const fileName = `${name}.md`;
+  const clash = state.notes.some(n => n !== note && n.folderId === note.folderId && (n.fileName || "").toLowerCase() === fileName.toLowerCase());
+  if (clash) {
+    toast("A note with that name is already in this folder");
+    syncEditor(note);
+    return;
+  }
+  const dir = dirHandles.get(note.folderId);
+  const old = fileHandles.get(note.id);
+  if (dir && old) {
+    try {
+      const fresh = await dir.getFileHandle(fileName, { create: true });
+      const writable = await fresh.createWritable();
+      await writable.write(note.body);
+      await writable.close();
+      if (note.fileName && note.fileName.toLowerCase() !== fileName.toLowerCase()) await dir.removeEntry(note.fileName);
+      fileHandles.set(note.id, fresh);
+      written.set(note.id, note.body);
+    } catch (err) {
+      toast("Could not rename the file");
+      syncEditor(note);
+      return;
+    }
+  }
+  const before = note.title;
+  note.title = name;
+  note.fileName = fileName;
+  const re = new RegExp(`\\[\\[\\s*${before.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*((?:#[^\\]|]*)?(?:\\|[^\\]]*)?)\\]\\]`, "gi");
+  let changed = 0;
+  state.notes.forEach(other => {
+    const body = other.body.replace(re, (_, rest) => `[[${name}${rest}]]`);
+    if (body !== other.body) {
+      other.body = body;
+      changed += 1;
+      syncEditor(other);
+    }
+  });
+  render();
+  toast(changed ? `Renamed. Updated links in ${changed} ${changed === 1 ? "note" : "notes"}` : "Renamed");
+}
+
 function goNote(dir) {
   const next = neighbor(dir);
   if (!next) return;
@@ -2245,7 +2795,7 @@ function goNote(dir) {
     turnToken += 1;
     state.selectedNoteId = next.id;
     state.view = "notes";
-    editingNote = false;
+    editingNote = liveDefault;
     render();
   };
   if (!sheet || reduce || typeof sheet.animate !== "function") { apply(); return; }
@@ -2296,6 +2846,9 @@ function hideSlip() {
 function paletteActions() {
   return [
     { label: "Open today", hint: "N", run: () => rollover() },
+    { label: "Open tasks", hint: "Vault", run: () => showTasksView(true) },
+    { label: editingNote ? "Reading view" : "Edit with live preview", hint: `${metaKey}E`, run: () => setMode(!editingNote) },
+    { label: "Toggle sidebar", hint: `${metaKey}\\`, run: () => toggleRail() },
     { label: "New note", hint: "Here", run: addNote },
     { label: "New folder", hint: "Vault", run: () => openModal("folder", "New folder", "Name") }
   ];
@@ -2402,7 +2955,7 @@ $("tree").addEventListener("click", (e) => {
   if (folder) {
     state.selectedFolderId = folder.dataset.open;
     state.collapsed[folder.dataset.open] = false;
-    editingNote = false;
+    editingNote = liveDefault;
     render();
   }
 });
@@ -2499,6 +3052,41 @@ $("search").addEventListener("input", (e) => {
   save();
 });
 $("btnToday").addEventListener("click", () => rollover());
+$("btnTasks").addEventListener("click", () => showTasksView(state.view !== "tasks"));
+$("btnRail").addEventListener("click", () => toggleRail());
+$("cal").addEventListener("click", (e) => {
+  const step = e.target.closest("[data-cal-step]");
+  if (step) { stepMonth(Number(step.dataset.calStep)); return; }
+  const day = e.target.closest("[data-cal-date]");
+  if (day) openDate(day.dataset.calDate);
+});
+$("banner").addEventListener("click", (e) => {
+  const use = e.target.closest("[data-use-daily]");
+  if (use) { markDaily(use.dataset.useDaily); return; }
+  if (e.target.closest("[data-make-daily]")) makeDailyFolder();
+});
+const THEMES = ["system", "light", "dark"];
+let theme = readPref("folia.theme", "system");
+function applyTheme() {
+  if (theme === "system") delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = theme;
+  const btn = $("btnTheme");
+  btn.innerHTML = theme === "dark"
+    ? `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>`
+    : theme === "light"
+      ? `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`
+      : `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 2a6 6 0 0 1 0 12Z" fill="currentColor"/></svg>`;
+  btn.title = `Theme: ${theme}`;
+  btn.setAttribute("aria-label", `Theme: ${theme}. Click to change`);
+}
+$("btnTheme").addEventListener("click", () => {
+  theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
+  writePref("folia.theme", theme);
+  applyTheme();
+  toast(`Theme: ${theme}`);
+});
+applyTheme();
+if (readPref("folia.rail", "shown") === "hidden" && !narrow()) toggleRail(true);
 $("btnOpen").addEventListener("click", openFolder);
 $("folderInput").addEventListener("change", (e) => {
   if (e.target.files && e.target.files.length) readDroppedFiles(e.target.files);
@@ -2549,6 +3137,19 @@ $("spread").addEventListener("submit", (e) => {
   }
 });
 $("spread").addEventListener("change", (e) => {
+  const allBox = e.target.closest("[data-all-note]");
+  if (allBox) {
+    const note = state.notes.find(n => n.id === allBox.dataset.allNote);
+    if (note) toggleLine(note, Number(allBox.dataset.allLine), allBox.checked);
+    toast(allBox.checked ? "Marked done" : "Reopened");
+    render();
+    return;
+  }
+  if (e.target.id === "tasksDone") {
+    tasksShowDone = e.target.checked;
+    render();
+    return;
+  }
   const box = e.target.closest("[data-toggle-task]");
   if (box) {
     const task = state.tasks.find(item => item.id === box.dataset.toggleTask);
@@ -2579,6 +3180,14 @@ $("spread").addEventListener("change", (e) => {
 });
 let writeTimer = 0;
 $("spread").addEventListener("input", (e) => {
+  if (e.target.id === "tasksFilter") {
+    tasksFilter = e.target.value;
+    const caret = e.target.selectionStart;
+    render();
+    const input = $("tasksFilter");
+    if (input) { input.focus(); input.setSelectionRange(caret, caret); }
+    return;
+  }
   if (e.target.id === "noteTitle") fitTitle(e.target);
   if (e.target.id !== "noteTitle" && e.target.id !== "noteBody") return;
   clearTimeout(writeTimer);
@@ -2671,10 +3280,19 @@ $("spread").addEventListener("keydown", (e) => {
   if (e.target.id === "noteTitle" && e.key === "Enter") {
     e.preventDefault();
     e.target.blur();
+    if (liveView && liveView.dom.isConnected) liveView.focus();
   }
 });
 $("spread").addEventListener("focusout", (e) => {
   if (suppressFocusSave) return;
+  if (e.target.id === "noteTitle") {
+    const note = state.notes.find(n => n.id === e.target.dataset.forNote);
+    const next = e.target.value.replace(/\n/g, " ").trim();
+    if (note && fileHandles.has(note.id) && note.type !== "daily" && next && next !== note.title) {
+      renameNote(note, next);
+      return;
+    }
+  }
   if (e.target.id !== "noteTitle" && e.target.id !== "noteBody") return;
   const note = flushEditor();
   if (note) writeNote(note);
@@ -2766,14 +3384,25 @@ $("spread").addEventListener("click", (e) => {
   if (delTask) { removeTask(delTask.dataset.delTask); return; }
   const delNote = e.target.closest("[data-del-note]");
   if (delNote) { removeNote(delNote.dataset.delNote); return; }
-  if (e.target.id === "btnEditNote") {
-    const body = $("noteBody");
-    if (body) {
-      const note = currentNote();
-      if (note) note.body = body.value;
-    }
-    editingNote = !editingNote;
-    render();
+  const modeBtn = e.target.closest("[data-mode]");
+  if (modeBtn) {
+    setMode(modeBtn.dataset.mode === "live");
+    return;
+  }
+  const dayBtn = e.target.closest("[data-day]");
+  if (dayBtn) {
+    stepDay(Number(dayBtn.dataset.day));
+    return;
+  }
+  const allBox = e.target.closest("[data-all-note]");
+  if (allBox) return;
+  const allOpen = e.target.closest("[data-open-note]");
+  if (allOpen) {
+    openNote(allOpen.dataset.openNote);
+    return;
+  }
+  if (e.target.closest("[data-back]")) {
+    showTasksView(false);
     return;
   }
   const jump = e.target.closest("[data-goto-task]");
@@ -2956,7 +3585,18 @@ $("paletteList").addEventListener("click", (e) => {
 });
 
 document.addEventListener("keydown", (e) => {
-  const typing = ["INPUT", "TEXTAREA"].includes(document.activeElement.tagName);
+  const active = document.activeElement;
+  const typing = ["INPUT", "TEXTAREA"].includes(active.tagName) || active.isContentEditable;
+  if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === "e") {
+    e.preventDefault();
+    if (currentNote()) setMode(!editingNote);
+    return;
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === "\\") {
+    e.preventDefault();
+    toggleRail();
+    return;
+  }
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
     e.preventDefault();
     if ($("paletteBg").classList.contains("on")) closePalette();
@@ -3006,7 +3646,7 @@ function applyRoute() {
 
 $("search").value = state.query || "";
 $("jumpKbd").textContent = `${metaKey}K`;
-$("paletteFoot").textContent = "N opens today. [ and ] turn the page.";
+$("paletteFoot").textContent = `N opens today · [ and ] turn the page · ${metaKey}E edit or read · ${metaKey}Enter ticks a task`;
 localStorage.removeItem(KEY);
 
 applyRoute();

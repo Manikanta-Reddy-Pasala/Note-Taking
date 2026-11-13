@@ -31,6 +31,12 @@ const fakeFs = (files) => {
       }
       return file(key, n);
     },
+    async removeEntry(n) { delete window.__files[prefix + n]; },
+    async getDirectoryHandle(n, opts) {
+      const key = prefix + n + "/";
+      if (!Object.keys(window.__files).some(k => k.startsWith(key)) && !(opts && opts.create)) throw new Error("NotFound");
+      return dir(key, n);
+    },
     async requestPermission() { return "granted"; },
     async queryPermission() { return "granted"; }
   });
@@ -55,7 +61,9 @@ async function open(files, now, storage) {
   page.on("pageerror", e => errors.push(String(e)));
   if (now) await page.clock.setFixedTime(new Date(now));
   await page.addInitScript(fakeFs, files);
-  if (storage) await page.addInitScript((items) => { for (const k in items) localStorage.setItem(k, items[k]); }, storage);
+  // Tests default to the reading view; live editor tests pass { "folia.mode": "live" }.
+  storage = Object.assign({ "folia.mode": "read" }, storage || {});
+  await page.addInitScript((items) => { for (const k in items) localStorage.setItem(k, items[k]); }, storage);
   await page.goto(page_url);
   await page.evaluate(async () => { await openRoot(window.__root); });
   return { browser, page, errors };

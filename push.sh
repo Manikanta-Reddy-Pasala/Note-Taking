@@ -24,7 +24,7 @@ if [[ -z "$(git config user.email || true)" ]]; then
   git config user.email "manikantareddy.pasala@gmail.com"
 fi
 
-git add index.html Dockerfile docker-compose.yml .dockerignore .gitignore run.sh push.sh
+git add index.html live.js vendor Dockerfile docker-compose.yml .dockerignore .gitignore run.sh push.sh
 if git diff --cached --quiet; then
   echo "Nothing new to commit."
 else
